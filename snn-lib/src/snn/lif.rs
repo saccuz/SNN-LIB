@@ -1,5 +1,19 @@
-//Make neuron from neuron.rs usable in this file
-use neuron::Neuron;
+//Make snn from snn.rs usable in this file
+
+use crate::snn;
+use snn::neuron;
+
+struct Snn {
+    layers : Vec<u8>
+}
+
+impl Snn {
+    fn new<N>(layers : Vec<N>)  -> Self where N : Neuron {
+        Snn { layers }
+    }
+
+
+}
 
 pub enum ResetMode {
     Zero,
@@ -23,14 +37,20 @@ struct LifNeuron {
     // ...ogni collegamento ha il suo peso...non si può fare così, come gestiamo i vari collegamenti?
 }
 
-impl Neuron for LifNeuron {
+impl LifNeuron {
+    fn new(v_mem : f64, v_rest : f64, v_th : f64, r_type : ResetMode, tau : f64) -> Self {
+        LifNeuron { v_mem, v_rest, v_th, r_type, t_s_last : 0, tau }
+    }
+}
+
+impl neuron::Neuron for LifNeuron {
     // Creates a new LifNeuron
     // (t_s_last is set to 0 by default at the beginning, no previous impulse received from the beginning of the neuron existence)
     fn new(v_mem : f64, v_rest : f64, v_th : f64, r_type : ResetMode, v_rest : f64, tau : f64) -> Self {
         LifNeuron { v_mem, v_rest, v_th, r_type, v_rest, 0, tau }
     }
 
-    // implements the forward pass of the neuron
+    // implements the forward pass of the snn
     fn forward(&mut self, input : &[f64]) -> f64 {
         
         //TODO: aggiungere calcolo della membrana e aggiornare parametri
