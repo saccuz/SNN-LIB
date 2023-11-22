@@ -26,7 +26,7 @@ pub enum ResetMode {
 //    Weight(f64)
 //}
 
-struct LifNeuron {
+pub struct LifNeuron {
     v_mem : f64,
     v_rest : f64,
     v_th : f64,
