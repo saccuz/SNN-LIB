@@ -1,15 +1,68 @@
 //Make snn from snn.rs usable in this file
 
-use crate::snn;
-use snn::neuron;
+use rand::Rng;
+use crate::snn::neuron::Neuron;
 
-struct Snn {
-    layers : Vec<u8>
+#[derive(Clone,Copy)]
+pub enum NeuronType {
+    LifNeuron
 }
 
-impl Snn {
-    fn new<N>(layers : Vec<N>)  -> Self where N : Neuron {
-        Snn { layers }
+struct Layer<N : Neuron> {
+    id : String,
+    neurons : Vec<N>,
+    inputs : Vec<u8>,
+    states : Vec<u8>,
+    states_weights : Option<Vec<Vec<f64>>>,
+    weights : Option<Vec<Vec<f64>>>,
+}
+
+impl<N> Layer<N> where N : Neuron {
+    fn new(id : u32, neurons : u32, neuron_type: NeuronType, states_weights : Option<Vec<Vec<f64>>>, weights : Option<Vec<Vec<f64>>>)  -> Self {
+        let mut neurons_vec = match neuron_type {
+            NeuronType::LifNeuron => Vec::<LifNeuron>::new()
+        };
+        for i in 0..neurons {
+            neurons_vec.push(LifNeuron::new( format!("{}-{}", id.to_string(), i.to_string()), i))
+        }
+        Layer { id : id.to_string(), neurons : neurons_vec, inputs : Vec::<u8>::new(), states : Vec::<u8>::new(), states_weights, weights }
+    }
+}
+
+pub struct Snn<N> {
+    layers : Vec<Layer<N>>
+}
+
+impl<N> Snn<N> where N : Neuron {
+    // Generates random weights matrix
+    fn random_weights(r : u32, c : u32, diag : bool) -> Vec<Vec<f64>> {
+        let mut rng = rand::thread_rng();
+        let mut weights = Vec::<Vec<f64>>::new();
+        for row in 0..r {
+            let mut row = Vec::<f64>::new();
+            for column in 0..c {
+                if diag && row == column {
+                    row.push(0.0);
+                }
+                else {
+                    row.push(rng.gen_range(0.01..1.0));
+                }
+            }
+            weights.push(row);
+        }
+        weights
+    }
+
+    pub fn new(layers : Vec<u32>, neuron_type : NeuronType)  -> Self {
+        let mut layers_vec = Vec::<Layer<N>>::new();
+
+        layers_vec.push(Layer::new(0, layers[0], neuron_type, None, None));
+
+        for (idx, l) in layers.iter().skip(1).enumerate() {
+            layers_vec.push(Layer::new(*l, *l, neuron_type, Option::Some(Snn::random_weights(*l, *l, true)),
+                                       Option::Some(Snn::random_weights(layers[idx], *l, false))));
+        }
+        Snn { layers : layers_vec }
     }
 
 
@@ -21,12 +74,8 @@ pub enum ResetMode {
     Subthreshold
 }
 
-//enum OutputWeight {
-//    None,
-//    Weight(f64)
-//}
-
 pub struct LifNeuron {
+    id : String,
     v_mem : f64,
     v_rest : f64,
     v_th : f64,
@@ -38,12 +87,16 @@ pub struct LifNeuron {
 }
 
 impl LifNeuron {
-    fn new(v_mem : f64, v_rest : f64, v_th : f64, r_type : ResetMode, tau : f64) -> Self {
-        LifNeuron { v_mem, v_rest, v_th, r_type, t_s_last : 0, tau }
+    //TODO: uncomment this and make it right
+    //fn new(v_mem : f64, v_rest : f64, v_th : f64, r_type : ResetMode, tau : f64) -> Self {
+    //    LifNeuron { v_mem, v_rest, v_th, r_type, t_s_last : 0, tau }
+    //}
+    fn new(id : String) -> Self {
+        LifNeuron { id,  v_mem : 0.0, v_rest : 0.0, v_th : 0.0, r_type: ResetMode::Zero, t_s_last : 0, tau : 0.0 }
     }
 }
 
-impl neuron::Neuron for LifNeuron {
+impl Neuron for LifNeuron {
     // Creates a new LifNeuron
     // (t_s_last is set to 0 by default at the beginning, no previous impulse received from the beginning of the snn existence)
 
@@ -52,7 +105,7 @@ impl neuron::Neuron for LifNeuron {
         
         //TODO: aggiungere calcolo della membrana e aggiornare parametri
 
-        spike = (self.v_mem > self.v_th) as u8;   //if v_mem>v_th then spike=1 else spike=0
+        let spike = (self.v_mem > self.v_th) as u8;   //if v_mem>v_th then spike=1 else spike=0
         
         if spike == 1 {
             self.v_mem = match self.r_type {
