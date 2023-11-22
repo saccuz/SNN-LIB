@@ -1,4 +1,4 @@
-use crate::snn;
+//use crate::snn;
 pub trait Neuron {
     //Non è sicuro che useremo tutti questi metodi, sono messi qui nel caso in cui servissero.
     //fn get_output(&self) -> f64;
@@ -12,11 +12,5 @@ pub trait Neuron {
     //fn set_delta(&mut self, delta: f64);
     //fn get_activation(&self) -> Activation;
     //fn set_activation(&mut self, activation: Activation);
-    fn forward(&mut self, input : &[f64]) -> u8;
+    fn forward(&mut self, input: &[f64]) -> f64;
 }
-
-
-
-
-
-
