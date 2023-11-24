@@ -25,9 +25,9 @@ impl Snn {
     fn random_weights(h: u32, w: u32, diag: bool) -> Vec<Vec<f64>> {
         let mut rng = rand::thread_rng();
         let mut weights = Vec::<Vec<f64>>::new();
-        for r in 0..h {
+        for r in 0..w {
             let mut row = Vec::<f64>::new();
-            for c in 0..w {
+            for c in 0..h {
                 if diag && r == c {
                     row.push(0.0);
                 } else {
@@ -54,6 +54,16 @@ impl Snn {
             ));
         }
         Snn { layers: layers_vec }
+    }
+
+    pub fn forward(self, x: Vec<u8>) -> Vec<u8> {
+        let mut out = x;
+
+        for l in self.layers {
+            out = l.forward(&out);
+        }
+
+        out
     }
 }
 
