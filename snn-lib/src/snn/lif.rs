@@ -39,7 +39,7 @@ impl Snn {
         weights
     }
 
-    pub fn new(layers: Vec<u32>, neuron_type: NeuronType) -> Self {
+    pub fn new(layers: Vec<u32>, intra_conn: Vec<bool>, neuron_type: NeuronType) -> Self {
         let mut layers_vec = Vec::<Layer>::new();
 
         layers_vec.push(Layer::new(0, layers[0], neuron_type, None, None));
@@ -49,8 +49,11 @@ impl Snn {
                 idx+1,
                 *l,
                 neuron_type,
-                Option::Some(Snn::random_weights(*l, *l, true)),
-                Option::Some(Snn::random_weights(layers[idx], *l, false)),
+                match intra_conn[idx+1] {
+                    true => Option::Some(Snn::random_weights(*l, *l, true)),
+                    false => None
+                },
+                Option::Some(Snn::random_weights(*l, layers[idx], false)),
             ));
         }
         Snn { layers: layers_vec }
@@ -67,10 +70,52 @@ impl Snn {
     }
 }
 
-pub enum ResetMode {
-    Zero,
-    RestingPotential(f64),
-    Subthreshold,
+struct Layer {
+    id: String,
+    neurons: Vec<Box<dyn Neuron + 'static>>,
+    inputs: Vec<u8>,
+    states: Vec<u8>,
+    states_weights: Option<Vec<Vec<f64>>>,
+    weights: Option<Vec<Vec<f64>>>,
+}
+
+impl Layer {
+    fn new(
+        id: usize,
+        neurons: u32,
+        neuron_type: NeuronType,
+        states_weights: Option<Vec<Vec<f64>>>,
+        weights: Option<Vec<Vec<f64>>>
+    ) -> Self {
+        let mut neurons_vec = match neuron_type {
+            NeuronType::LifNeuron => Vec::<Box<dyn Neuron>>::new(),
+        };
+        for i in 0..neurons {
+            neurons_vec.push(Box::new(LifNeuron::new(format!(
+                "{}-{}",
+                id.to_string(),
+                i.to_string()
+            ))))
+        }
+        Layer {
+            id: id.to_string(),
+            neurons: neurons_vec,
+            inputs: Vec::<u8>::new(),
+            states: Vec::<u8>::new(),
+            states_weights,
+            weights,
+        }
+    }
+
+    fn forward(self, states_vector: &Vec<u8>) -> Vec<u8> {
+        let mut spikes = Vec::<u8>::new();
+
+        for mut n in self.neurons {
+            spikes.push(n.forward(&states_vector, &self.states_weights, &self.states_weights, &self.states));
+        }
+
+        spikes
+    }
 }
 
 pub struct LifNeuron {
