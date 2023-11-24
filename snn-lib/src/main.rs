@@ -5,7 +5,9 @@ use crate::snn::lif::NeuronType;
 use snn::lif;
 
 fn main() {
-    let _snn = lif::Snn::new(vec![3, 2, 2], NeuronType::LifNeuron);
+    let snn = lif::Snn::new(vec![3, 2, 2], vec![true, true, true],NeuronType::LifNeuron);
+    //snn.set_parameters();
+
 
     //let mut rng = rand::thread_rng();
     //let mut weights = Vec::<Vec<f64>>::new();

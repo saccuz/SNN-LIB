@@ -12,5 +12,5 @@ pub trait Neuron {
     //fn set_delta(&mut self, delta: f64);
     //fn get_activation(&self) -> Activation;
     //fn set_activation(&mut self, activation: Activation);
-    fn forward(&mut self, input: &[f64]) -> f64;
+    fn forward(&mut self, input: &Vec<u8>, state_weights : &Option<Vec<Vec<f64>>>, weights : &Option<Vec<Vec<f64>>>, states : &Vec<u8>) -> u8;
 }
