@@ -49,10 +49,8 @@ impl Snn {
 
     pub fn new(n_inputs: u32, layers: Vec<u32>, intra_conn: Vec<bool>, neuron_type: NeuronType) -> Self {
         let mut layers_vec = Vec::<Layer>::new();
-
-        layers_vec.push(Layer::new(0, layers[0], neuron_type, None, None));
-
-        for (idx, l) in layers.iter().skip(1).enumerate() {
+        //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
+        for (idx, l) in layers.iter().enumerate() {
             layers_vec.push(Layer::new(
                 idx,
                 *l,
@@ -61,7 +59,10 @@ impl Snn {
                     true => Option::Some(Snn::random_weights(*l, *l, true)),
                     false => None
                 },
-                Option::Some(Snn::random_weights(*l, layers[idx], false)),
+                match idx {
+                    0 => Snn::random_weights(*l, n_inputs, false),
+                    _ => Snn::random_weights(*l, layers[idx-1], false),
+                }
             ));
         }
         Snn { layers: layers_vec }
@@ -81,7 +82,7 @@ impl Snn {
 struct Layer {
     id: String,
     neurons: Vec<Box<dyn Neuron + 'static>>,
-    inputs: Vec<u8>,
+    //inputs: Vec<u8>,
     states: Vec<u8>,
     states_weights: Option<Vec<Vec<f64>>>,
     weights: Vec<Vec<f64>>,
@@ -108,19 +109,21 @@ impl Layer {
         Layer {
             id: id.to_string(),
             neurons: neurons_vec,
-            inputs: Vec::<u8>::new(),
-            states: Vec::<u8>::new(),
+            //inputs: Vec::<u8>::new(),
+            states: vec![0; neurons as usize],
             states_weights,
             weights,
         }
     }
 
-    fn forward(self, states_vector: &Vec<u8>) -> Vec<u8> {
+    fn forward(&mut self, inputs: &Vec<u8>) -> Vec<u8> {
         let mut spikes = Vec::<u8>::new();
 
         for n in self.neurons.iter_mut() {
             spikes.push(n.forward(&inputs, &self.states_weights, &self.weights, &self.states));
         }
+
+        self.states = spikes.clone();
 
         spikes
     }
@@ -165,7 +168,7 @@ impl LifNeuron {
 //
     //}
 
-    fn y(inputs : &Vec<u8>, states : &Vec<u8> ,  weights : &Vec<f64>, states_weights : &Vec<f64>) -> f64 {
+    fn y(inputs : &Vec<u8>, states : &Vec<u8> ,  weights : &Vec<f64>, states_weights : Option<&Vec<f64>>) -> f64 {
         let mut out = 0.0;
         //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
         //TODO: CAPIRE SE TRASFERIRE I FOR IN UNA FUNZIONE A PARTE
@@ -211,15 +214,18 @@ impl Neuron for LifNeuron {
     // (t_s_last is set to 0 by default at the beginning, no previous impulse received from the beginning of the snn existence)
 
     // implements the forward pass of the snn
-    fn forward(&mut self, input: &Vec<u8>, states_weights : &Option<Vec<Vec<f64>>>, weights : &Option<Vec<Vec<f64>>>, states : &Vec<u8>) -> u8 {
+    fn forward(&mut self, input: &Vec<u8>, states_weights : &Option<Vec<Vec<f64>>>, weights : &Vec<Vec<f64>>, states : &Vec<u8>) -> u8 {
 
-
-        let exponent : f64 = (3 - self.t_s_last) as f64 / self.tau;
+        //LifNeuron::y(input, states, &weights &state_weights, n_neuron);
+        // Input impulses summation
         let n_neuron = self.id.split("-").collect::<Vec<&str>>()[1].parse::<u32>().unwrap() as usize;
-        let out = LifNeuron::y(input, states, &weights.as_ref().unwrap()[n_neuron],
-                               &states_weights.as_ref().unwrap()[n_neuron]);
+        let summation = match states_weights {
+            Some(states_weights) => LifNeuron::y(input, states, &weights[n_neuron], Option::Some(&states_weights[n_neuron])),
+            None => LifNeuron::y(input, states, &weights[n_neuron], Option::None)
+        };
 
-        self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + out;
+        let exponent : f64 = -((3 - self.t_s_last) as f64) / self.tau;
+        self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
 
         let spike = (self.v_mem > self.v_th) as u8; //if v_mem>v_th then spike=1 else spike=0
 
