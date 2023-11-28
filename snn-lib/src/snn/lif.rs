@@ -25,28 +25,36 @@ impl Snn {
     fn random_weights(h: u32, w: u32, diag: bool) -> Vec<Vec<f64>> {
         let mut rng = rand::thread_rng();
         let mut weights = Vec::<Vec<f64>>::new();
-        for r in 0..w {
+        for r in 0..h {
             let mut row = Vec::<f64>::new();
-            for c in 0..h {
-                if diag && r == c {
-                    row.push(0.0);
-                } else {
-                    row.push(rng.gen_range(0.01..1.0));
+            for c in 0..w {
+                let rnd_number = rng.gen_range(0.01..1.0);
+                if diag {
+                    if r == c {
+                        row.push(0.0);
+                    }
+                    else {
+                        row.push(-rnd_number);
+                    }
+                }
+                else {
+                    row.push(rnd_number);
                 }
             }
             weights.push(row);
         }
+
         weights
     }
 
-    pub fn new(layers: Vec<u32>, intra_conn: Vec<bool>, neuron_type: NeuronType) -> Self {
+    pub fn new(n_inputs: u32, layers: Vec<u32>, intra_conn: Vec<bool>, neuron_type: NeuronType) -> Self {
         let mut layers_vec = Vec::<Layer>::new();
 
         layers_vec.push(Layer::new(0, layers[0], neuron_type, None, None));
 
         for (idx, l) in layers.iter().skip(1).enumerate() {
             layers_vec.push(Layer::new(
-                idx+1,
+                idx,
                 *l,
                 neuron_type,
                 match intra_conn[idx+1] {
@@ -61,8 +69,8 @@ impl Snn {
 
     pub fn forward(self, x: Vec<u8>) -> Vec<u8> {
         let mut out = x;
-
-        for l in self.layers {
+        //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
+        for l in self.layers.iter_mut() {
             out = l.forward(&out);
         }
 
@@ -85,7 +93,7 @@ impl Layer {
         neurons: u32,
         neuron_type: NeuronType,
         states_weights: Option<Vec<Vec<f64>>>,
-        weights: Option<Vec<Vec<f64>>>
+        weights: Vec<Vec<f64>>
     ) -> Self {
         let mut neurons_vec = match neuron_type {
             NeuronType::LifNeuron => Vec::<Box<dyn Neuron>>::new(),
@@ -110,8 +118,8 @@ impl Layer {
     fn forward(self, states_vector: &Vec<u8>) -> Vec<u8> {
         let mut spikes = Vec::<u8>::new();
 
-        for mut n in self.neurons {
-            spikes.push(n.forward(&states_vector, &self.states_weights, &self.states_weights, &self.states));
+        for n in self.neurons.iter_mut() {
+            spikes.push(n.forward(&inputs, &self.states_weights, &self.weights, &self.states));
         }
 
         spikes
@@ -140,7 +148,7 @@ impl LifNeuron {
             id,
             v_mem: 0.0,
             v_rest: 0.0,
-            v_th: 0.0,
+            v_th: 0.8,
             r_type: ResetMode::Zero,
             t_s_last: 0,
             tau: 0.0,
@@ -159,15 +167,30 @@ impl LifNeuron {
 
     fn y(inputs : &Vec<u8>, states : &Vec<u8> ,  weights : &Vec<f64>, states_weights : &Vec<f64>) -> f64 {
         let mut out = 0.0;
+        //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
+        //TODO: CAPIRE SE TRASFERIRE I FOR IN UNA FUNZIONE A PARTE
+
+        //prodotto scalare tra input e pesi degli input
         for (idx, x) in inputs.iter().enumerate(){
-            out = LifNeuron::add( //somma per ogni neurone
-                out, LifNeuron::add( //somma le due moltiplicazioni
-                               LifNeuron::mul(x,weights[idx]), // moltiplica la spike per il peso dell'input
-                               LifNeuron::mul(&states[idx], states_weights[idx]) // moltiplica lo stato interno per il peso dello stato
-                )
-            )
+            //somma per ogni neurone
+            out = LifNeuron::add(out, LifNeuron::mul(x,weights[idx])); // moltiplica la spike per il peso dell'input
         }
 
+        match states_weights {
+            //se è presente il vettore dei pesi degli stati
+            Some(states_weights) => {
+                let mut sum1 = 0.0;
+                //prodotto scalare tra stati e pesi degli stati
+                for (idx, x) in states_weights.iter().enumerate(){
+                    sum1 = LifNeuron::add(sum1, LifNeuron::mul(&states[idx], *x));
+                }
+                LifNeuron::add(out, sum1)
+            },
+            //se non è presente il vettore dei pesi degli stati
+            None => {
+                   out
+            },
+        }
         //Out è la combinazione lineare tra il vettore degli input e il vettore dei pesi associati
         out
 
