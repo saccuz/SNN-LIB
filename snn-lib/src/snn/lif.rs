@@ -57,7 +57,7 @@ impl Snn {
                 idx,
                 *l,
                 neuron_type,
-                match intra_conn[idx+1] {
+                match intra_conn[idx] {
                     true => Option::Some(Snn::random_weights(*l, *l, true)),
                     false => None
                 },
@@ -67,7 +67,7 @@ impl Snn {
         Snn { layers: layers_vec }
     }
 
-    pub fn forward(self, x: Vec<u8>) -> Vec<u8> {
+    pub fn forward(&mut self, x: Vec<u8>) -> Vec<u8> {
         let mut out = x;
         //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
         for l in self.layers.iter_mut() {
@@ -84,7 +84,7 @@ struct Layer {
     inputs: Vec<u8>,
     states: Vec<u8>,
     states_weights: Option<Vec<Vec<f64>>>,
-    weights: Option<Vec<Vec<f64>>>,
+    weights: Vec<Vec<f64>>,
 }
 
 impl Layer {
@@ -192,8 +192,6 @@ impl LifNeuron {
             },
         }
         //Out è la combinazione lineare tra il vettore degli input e il vettore dei pesi associati
-        out
-
     }
 
     // da spostare in un altra libreria (es: simhw)

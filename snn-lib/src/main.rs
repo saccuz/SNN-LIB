@@ -5,7 +5,11 @@ use crate::snn::lif::NeuronType;
 use snn::lif;
 
 fn main() {
-    let snn = lif::Snn::new(vec![3, 2, 2], vec![true, true, true],NeuronType::LifNeuron);
+    let mut snn = lif::Snn::new(6,vec![10,5,3], vec![true, true, true],NeuronType::LifNeuron);
+    //println!("{:?}", );
+    for i in 0..30 {
+        println!("{:?}", snn.forward(vec![0,1,0,0,0,0]));
+    }
     //snn.set_parameters();
 
 
