@@ -1,2 +1,9 @@
+# cose da fare
+- controlli parametri
+- fault injection
+- refactoring 
+
 # cose carine
-- chiamata alla forward del layer l con l(out)
+- ottimizzazione
+- refactoring
+- simHw a parte
