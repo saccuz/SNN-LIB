@@ -4,7 +4,6 @@ use crate::snn::neuron::Neuron;
 use crate::snn::neuron::NeuronParameters;
 
 #[derive(Clone, Copy)]
-
 pub enum ResetMode {
     Zero,
     RestingPotential,
@@ -167,7 +166,7 @@ impl Neuron for LifNeuron {
         if spike == 1 {
             self.v_mem = match self.r_type {
                 ResetMode::Zero => 0.0,
-                ResetMode::RestingPotential(v) => v,
+                ResetMode::RestingPotential => self.v_rest,
                 ResetMode::Subthreshold => self.v_mem - self.v_th,
             }
         }
