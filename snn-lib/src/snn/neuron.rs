@@ -25,3 +25,5 @@ pub trait Neuron {
     //fn get_activation(&self) -> Activation;
     //fn set_activation(&mut self, activation: Activation);
 }
+
+pub trait NeuronParameters {}
