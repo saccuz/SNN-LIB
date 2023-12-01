@@ -1,3 +1,4 @@
+use crate::snn::faults::ActualFault;
 //Make snn from snn.rs usable in this file
 use crate::snn::neuron::Neuron;
 use crate::snn::neuron::NeuronParameters;
@@ -6,7 +7,7 @@ use crate::snn::neuron::NeuronParameters;
 
 pub enum ResetMode {
     Zero,
-    RestingPotential(f64),
+    RestingPotential,
     Subthreshold,
 }
 #[derive(Clone)]
@@ -38,7 +39,16 @@ impl LifNeuron {
     //
     //
     //}
+    fn scalar_product(inputs: &Vec<u8>, weights: &Vec<f64>) -> f64 {
+        let mut scalar = 0.0;
 
+        for (idx, x) in inputs.iter().enumerate() {
+            //somma per ogni neurone
+            scalar = LifNeuron::add(scalar, LifNeuron::mul(x, weights[idx])); // moltiplica la spike per il peso dell'input
+        }
+
+        scalar
+    }
     fn y(
         inputs: &Vec<u8>,
         states: &Vec<u8>,
@@ -50,19 +60,12 @@ impl LifNeuron {
         //TODO: CAPIRE SE TRASFERIRE I FOR IN UNA FUNZIONE A PARTE
 
         //prodotto scalare tra input e pesi degli input
-        for (idx, x) in inputs.iter().enumerate() {
-            //somma per ogni neurone
-            out = LifNeuron::add(out, LifNeuron::mul(x, weights[idx])); // moltiplica la spike per il peso dell'input
-        }
+        out = LifNeuron::scalar_product(inputs, weights);
 
         match states_weights {
             //se è presente il vettore dei pesi degli stati
             Some(states_weights) => {
-                let mut sum1 = 0.0;
-                //prodotto scalare tra stati e pesi degli stati
-                for (idx, x) in states_weights.iter().enumerate() {
-                    sum1 = LifNeuron::add(sum1, LifNeuron::mul(&states[idx], *x));
-                }
+                let sum1 = LifNeuron::scalar_product(states, states_weights);
                 LifNeuron::add(out, sum1)
             }
             //se non è presente il vettore dei pesi degli stati
@@ -79,6 +82,11 @@ impl LifNeuron {
     fn mul(x: &u8, y: f64) -> f64 {
         //fare controllo su guasto
         *x as f64 * y
+    }
+
+    fn compare(x: f64, y: f64) -> u8 {
+        // fare controllo su guasto
+        (x > y) as u8
     }
 }
 
@@ -134,6 +142,7 @@ impl Neuron for LifNeuron {
         states_weights: &Option<Vec<Vec<f64>>>,
         weights: &Vec<Vec<f64>>,
         states: &Vec<u8>,
+        actual_fault: Option<&ActualFault>,
     ) -> u8 {
         self.timer += 1;
         // Input impulses summation
@@ -145,15 +154,15 @@ impl Neuron for LifNeuron {
                 input,
                 states,
                 &weights[n_neuron],
-                Option::Some(&states_weights[n_neuron]),
+                Some(&states_weights[n_neuron]),
             ),
-            None => LifNeuron::y(input, states, &weights[n_neuron], Option::None),
+            None => LifNeuron::y(input, states, &weights[n_neuron], None),
         };
 
         let exponent: f64 = -((self.timer - self.t_s_last) as f64) / self.tau;
         self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
 
-        let spike = (self.v_mem > self.v_th) as u8; //if v_mem>v_th then spike=1 else spike=0
+        let spike = LifNeuron::compare(self.v_mem, self.v_th); //if v_mem>v_th then spike=1 else spike=0
 
         if spike == 1 {
             self.v_mem = match self.r_type {

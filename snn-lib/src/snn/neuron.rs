@@ -1,3 +1,5 @@
+use crate::snn::faults::ActualFault;
+
 //use crate::snn;
 pub trait Neuron {
     type T: NeuronParameters;
@@ -10,6 +12,7 @@ pub trait Neuron {
         states_weights: &Option<Vec<Vec<f64>>>,
         weights: &Vec<Vec<f64>>,
         states: &Vec<u8>,
+        actual_fault: Option<&ActualFault>,
     ) -> u8;
 
     //Non è sicuro che useremo tutti questi metodi, sono messi qui nel caso in cui servissero.
