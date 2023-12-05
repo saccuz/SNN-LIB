@@ -27,7 +27,6 @@ pub struct LifNeuron {
     r_type: ResetMode,
     t_s_last: u64,
     tau: f64,
-    timer: u64, //conta il tempo dopo ogni forward
 }
 
 impl LifNeuron {
@@ -56,7 +55,6 @@ impl LifNeuron {
     ) -> f64 {
         let mut out = 0.0;
         //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
-        //TODO: CAPIRE SE TRASFERIRE I FOR IN UNA FUNZIONE A PARTE
 
         //prodotto scalare tra input e pesi degli input
         out = LifNeuron::scalar_product(inputs, weights);
@@ -83,6 +81,11 @@ impl LifNeuron {
         *x as f64 * y
     }
 
+    fn div(x: f64, y: f64) -> f64 {
+        // fare controllo su guasto
+        x / y
+    }
+
     fn compare(x: f64, y: f64) -> u8 {
         // fare controllo su guasto
         (x > y) as u8
@@ -103,7 +106,6 @@ impl Neuron for LifNeuron {
                 r_type: ResetMode::Zero,
                 t_s_last: 0,
                 tau: p.tau,
-                timer: 0,
             },
             None => LifNeuron {
                 id,
@@ -113,7 +115,6 @@ impl Neuron for LifNeuron {
                 r_type: ResetMode::Zero,
                 t_s_last: 0,
                 tau: 0.0,
-                timer: 0,
             },
         }
     }
@@ -143,7 +144,7 @@ impl Neuron for LifNeuron {
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault>,
     ) -> u8 {
-        self.timer += 1;
+        self.t_s_last += 1;
         // Input impulses summation
         let n_neuron = self.id.split("-").collect::<Vec<&str>>()[1]
             .parse::<u32>()
@@ -158,12 +159,13 @@ impl Neuron for LifNeuron {
             None => LifNeuron::y(input, states, &weights[n_neuron], None),
         };
 
-        let exponent: f64 = -((self.timer - self.t_s_last) as f64) / self.tau;
+        let exponent: f64 = LifNeuron::div(-((self.t_s_last) as f64), self.tau);
         self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
 
         let spike = LifNeuron::compare(self.v_mem, self.v_th); //if v_mem>v_th then spike=1 else spike=0
 
         if spike == 1 {
+            self.t_s_last = 0;
             self.v_mem = match self.r_type {
                 ResetMode::Zero => 0.0,
                 ResetMode::RestingPotential => self.v_rest,

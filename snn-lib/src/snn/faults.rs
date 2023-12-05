@@ -29,7 +29,7 @@ pub enum InnerComponent {
 #[derive(Clone)]
 pub enum OuterComponent {
     Weights,          //weights
-    InnerWeights,     // state_weights
+    InnerWeights,     //state_weights
     Connections,      //weight = 0
     InnerConnections, //state_weight = 0
 }
@@ -39,12 +39,45 @@ pub struct ActualFault {
     pub layer_id: u32,
     pub neuron_id: (u32, Option<u32>),
     pub fault_type: FaultType,
+    pub time_tbf: Option<usize>,
+    pub offset: u8,
 }
 
 pub struct FaultConfiguration {
     components: Vec<Component>,
     fault_type: FaultType,
     n_occurrences: u32,
+}
+
+pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
+    //And - Tutti a 1 e il bit a 0 es: 111111111011111
+
+    let mut value_bits = x.to_bits();
+
+    value_bits &= !(1_u64 << offset);
+
+    *x = f64::from_bits(value_bits);
+}
+
+pub fn stuck_at_one(x: &mut f64, offset: u8) -> () {
+    //or - tutti a 0 e il bit a 1 0000000000100000
+
+    let mut value_bits = x.to_bits();
+
+    value_bits |= 1_u64 << offset;
+
+    let result = f64::from_bits(value_bits);
+    *x = f64::from_bits(value_bits);
+}
+
+pub fn bit_flip(x: &mut f64, offset: u8) -> () {
+    //xor - tutti a 0 e il bit a 1 es: 00001000000
+
+    let mut value_bits = x.to_bits();
+
+    value_bits ^= 1_u64 << offset;
+
+    *x = f64::from_bits(value_bits);
 }
 
 impl FaultConfiguration {
@@ -60,9 +93,14 @@ impl FaultConfiguration {
         self.n_occurrences
     }
 
-    pub fn get_actual_faults(&self, layers_info: Vec<usize>) -> ActualFault {
+    pub fn get_actual_faults(&self, layers_info: Vec<usize>, total_time: usize) -> ActualFault {
         let mut rng = thread_rng();
         let component = (*self.components.choose(&mut rng).unwrap()).clone();
+        let time_tbf = match self.fault_type {
+            FaultType::TransientBitFlip => Some(rng.gen_range(0..total_time)),
+            _ => None,
+        };
+        let offset = rng.gen_range(0..64);
         let (layer_id, neuron_id) = match component.clone() {
             Component::Inside(_) => {
                 let layer_id = rng.gen_range(0..layers_info.len());
@@ -99,6 +137,8 @@ impl FaultConfiguration {
             layer_id,
             neuron_id,
             fault_type: self.fault_type.clone(),
+            time_tbf,
+            offset,
         }
     }
 }
