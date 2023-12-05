@@ -4,8 +4,9 @@ use crate::snn::faults::{
     Component, FaultConfiguration, FaultType, InnerComponent, OuterComponent,
 };
 use crate::snn::lif::{LifNeuron, LifNeuronParameters, ResetMode};
-use crate::snn::matrix::{Input, Matrix};
+//use crate::snn::matrix::{Input, Matrix};
 use crate::snn::snn::Snn;
+use crate::snn::matrix2::{Matrix, CMatrix, VMatrix, D, A};
 
 fn main() {
     // 1 - First way to set specific neuron parameters, different for each layer
@@ -43,7 +44,7 @@ fn main() {
     //    vec![1, 1, 0, 0, 1, 1]
     //];
 
-    let input_matrix = Input::random(17, 6, false);
+    //let input_matrix = Input::random(17, 6, false);
 
     //println!("{}", input_matrix);
 
@@ -51,16 +52,28 @@ fn main() {
 
     println!("{}", snn);
 
-    // Fault injection
-    let fault_configuration = FaultConfiguration::new(
-        vec![
-            Component::Inside(InnerComponent::Adder),
-            Component::Outside(OuterComponent::Connections),
-            Component::Outside(OuterComponent::Weights),
-        ],
-        FaultType::StuckAtZero,
-        100,
-    );
 
-    snn.emulate_fault(&input_matrix, &fault_configuration);
+    //Test CMatrix
+    let matrix3 = CMatrix::<f64,3,4>::new();
+    println!("{}", matrix3.rows);
+    println!("{}", matrix3.cols);
+    println!("{}", matrix3);
+    let b:usize = 3;
+
+
+
+    let matrix5 = CMatrix::<f64,>::random();
+    println!("{}", matrix5);
+    // Fault injection
+    //let fault_configuration = FaultConfiguration::new(
+    //    vec![
+    //        Component::Inside(InnerComponent::Adder),
+    //        Component::Outside(OuterComponent::Connections),
+    //        Component::Outside(OuterComponent::Weights),
+    //    ],
+    //    FaultType::StuckAtZero,
+    //    100,
+    //);
+
+    //snn.emulate_fault(&input_matrix, &fault_configuration);
 }
