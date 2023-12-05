@@ -143,6 +143,7 @@ impl Neuron for LifNeuron {
         weights: &Vec<Vec<f64>>,
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault>,
+        time: usize,
     ) -> u8 {
         self.t_s_last += 1;
         // Input impulses summation

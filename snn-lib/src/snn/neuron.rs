@@ -13,6 +13,7 @@ pub trait Neuron {
         weights: &Vec<Vec<f64>>,
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault>,
+        time: usize,
     ) -> u8;
 
     //Non è sicuro che useremo tutti questi metodi, sono messi qui nel caso in cui servissero.
