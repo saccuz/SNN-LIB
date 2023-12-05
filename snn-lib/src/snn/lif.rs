@@ -25,7 +25,7 @@ pub struct LifNeuron {
     v_rest: f64,
     v_th: f64,
     r_type: ResetMode,
-    t_s_last: u64,
+    t_s_last: u64, //t_s_last nel nostro caso funge come variazione di tempo dall'ultima spike. Quindi è uguale a t-t_last
     tau: f64,
 }
 
