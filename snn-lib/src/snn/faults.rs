@@ -20,6 +20,7 @@ pub enum Component {
 pub enum InnerComponent {
     Adder,      //add
     Multiplier, //mul
+    Divider,
     Comparator, //compare
     Threshold,  //v_th
     Membrane,   //v_mem
@@ -47,37 +48,6 @@ pub struct FaultConfiguration {
     components: Vec<Component>,
     fault_type: FaultType,
     n_occurrences: u32,
-}
-
-pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
-    //And - Tutti a 1 e il bit a 0 es: 111111111011111
-
-    let mut value_bits = x.to_bits();
-
-    value_bits &= !(1_u64 << offset);
-
-    *x = f64::from_bits(value_bits);
-}
-
-pub fn stuck_at_one(x: &mut f64, offset: u8) -> () {
-    //or - tutti a 0 e il bit a 1 0000000000100000
-
-    let mut value_bits = x.to_bits();
-
-    value_bits |= 1_u64 << offset;
-
-    let result = f64::from_bits(value_bits);
-    *x = f64::from_bits(value_bits);
-}
-
-pub fn bit_flip(x: &mut f64, offset: u8) -> () {
-    //xor - tutti a 0 e il bit a 1 es: 00001000000
-
-    let mut value_bits = x.to_bits();
-
-    value_bits ^= 1_u64 << offset;
-
-    *x = f64::from_bits(value_bits);
 }
 
 impl FaultConfiguration {
@@ -141,4 +111,50 @@ impl FaultConfiguration {
             offset,
         }
     }
+}
+
+pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
+    //And - Tutti a 1 e il bit a 0 es: 111111111011111
+
+    let mut value_bits = x.to_bits();
+
+    value_bits &= !(1_u64 << offset);
+
+    *x = f64::from_bits(value_bits);
+}
+
+pub fn stuck_at_one(x: &mut f64, offset: u8) -> () {
+    //or - tutti a 0 e il bit a 1 0000000000100000
+
+    let mut value_bits = x.to_bits();
+
+    value_bits |= 1_u64 << offset;
+
+    let result = f64::from_bits(value_bits);
+    *x = f64::from_bits(value_bits);
+}
+
+pub fn bit_flip(x: &mut f64, offset: u8) -> () {
+    //xor - tutti a 0 e il bit a 1 es: 00001000000
+
+    let mut value_bits = x.to_bits();
+
+    value_bits ^= 1_u64 << offset;
+
+    *x = f64::from_bits(value_bits);
+}
+
+pub fn apply_fault(mut result: f64, actual_fault: Option<&ActualFault>, its_me: bool) -> f64 {
+    let ret = match actual_fault {
+        Some(a_f) if its_me => {
+            match a_f.fault_type {
+                FaultType::StuckAtZero => stuck_at_zero(&mut result, a_f.offset),
+                FaultType::StuckAtOne => stuck_at_one(&mut result, a_f.offset),
+                FaultType::TransientBitFlip => bit_flip(&mut result, a_f.offset),
+            }
+            result
+        }
+        _ => result,
+    };
+    ret
 }

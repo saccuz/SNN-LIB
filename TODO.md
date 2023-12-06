@@ -9,5 +9,5 @@
 - refactoring
 - simHw a parte
 
-# IMPORTANTE!
+# Importante
 - Cercare di effettuare un log di tutti i fault, quindi visualizzare dove il fault va ad agire e altre informazioni utili per capire cosa sta cambiando nel programma.

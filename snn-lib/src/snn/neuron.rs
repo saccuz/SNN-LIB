@@ -1,11 +1,14 @@
-use crate::snn::faults::ActualFault;
+use crate::snn::faults::{ActualFault, InnerComponent};
 
 //use crate::snn;
 pub trait Neuron {
     type T: NeuronParameters;
-    fn new(id: String, parameters: Option<&Self::T>) -> Self;
+    fn new(id: u32, parameters: Option<&Self::T>) -> Self;
     fn set_parameters(&mut self, parameters: &Self::T) -> ();
     fn get_parameters(&self) -> Self::T;
+    fn get_id(&self) -> u32;
+
+    //fn restore_param(comp: InnerComponent) -> ();
     fn forward(
         &mut self,
         input: &Vec<u8>,
@@ -13,21 +16,7 @@ pub trait Neuron {
         weights: &Vec<Vec<f64>>,
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault>,
-        time: usize,
     ) -> u8;
-
-    //Non è sicuro che useremo tutti questi metodi, sono messi qui nel caso in cui servissero.
-    //fn get_output(&self) -> f64;
-    //fn set_input(&mut self, input: f64);
-    //fn get_input(&self) -> f64;
-    //fn get_weights(&self) -> Vec<f64>;
-    //fn set_weights(&mut self, weights: Vec<f64>);
-    //fn get_bias(&self) -> f64;
-    //fn set_bias(&mut self, bias: f64);
-    //fn get_delta(&self) -> f64;
-    //fn set_delta(&mut self, delta: f64);
-    //fn get_activation(&self) -> Activation;
-    //fn set_activation(&mut self, activation: Activation);
 }
 
 pub trait NeuronParameters {}

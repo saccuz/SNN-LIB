@@ -2,8 +2,9 @@ use crate::snn::faults::{
     bit_flip, stuck_at_one, stuck_at_zero, ActualFault, Component, FaultConfiguration, FaultType,
     OuterComponent,
 };
+use crate::snn::lif::LifNeuronParameters;
 use crate::snn::matrix::Input;
-use crate::snn::neuron::Neuron;
+use crate::snn::neuron::{Neuron, NeuronParameters};
 use rand::Rng;
 use std::fmt::{Display, Formatter, Result};
 
@@ -12,11 +13,12 @@ pub enum NeuronType {
     LifNeuron,
 }
 
+#[derive(Clone)]
 pub struct Snn<N: Neuron> {
     layers: Vec<Layer<N>>,
 }
 
-impl<N: Neuron> Snn<N> {
+impl<N: Neuron + Clone> Snn<N> {
     pub fn new(
         n_inputs: u32,
         layers: Vec<u32>,
@@ -85,7 +87,7 @@ impl<N: Neuron> Snn<N> {
         match fault_configuration {
             Some(fault_configuration) => {
                 let actual_faults = fault_configuration
-                    .get_actual_faults(self.get_layer_nneurons(), input_matrix.data.len());
+                    .get_actual_faults(self.get_layer_nneurons(), input_matrix.rows);
                 for (idx, input_array) in input_matrix.data.iter().enumerate() {
                     let mut y = Vec::new();
                     for (layer_idx, l) in self.layers.iter_mut().enumerate() {
@@ -129,7 +131,15 @@ impl<N: Neuron> Snn<N> {
             .map(|x| (x.weights.clone(), x.states_weights.clone()))
             .collect::<Vec<(Vec<Vec<f64>>, Option<Vec<Vec<f64>>>)>>();
         for i in 0..fault_configuration.get_n_occurrences() {
-            let result = self.forward(input_matrix, Some(fault_configuration));
+            let ll = self
+                .layers
+                .iter()
+                .map(|x| (*x).clone())
+                .collect::<Vec<Layer<N>>>();
+
+            let mut cloned = Snn::from(ll);
+
+            let result = cloned.forward(input_matrix, Some(fault_configuration));
 
             println!("The result for the {} repetition is {:?}", i, result);
 
@@ -195,7 +205,7 @@ impl<N: Neuron> Display for Snn<N> {
         Ok(())
     }
 }
-
+#[derive(Clone)]
 struct Layer<N: Neuron> {
     id: u32,
     neurons: Vec<N>,
@@ -204,7 +214,7 @@ struct Layer<N: Neuron> {
     weights: Vec<Vec<f64>>,
 }
 
-impl<N: Neuron> Layer<N> {
+impl<N: Neuron + Clone> Layer<N> {
     fn new(
         id: u32,
         neurons: u32,
@@ -214,10 +224,7 @@ impl<N: Neuron> Layer<N> {
     ) -> Self {
         let mut neurons_vec = Vec::<N>::new();
         for i in 0..neurons {
-            neurons_vec.push(N::new(
-                format!("{}-{}", id.to_string(), i.to_string()),
-                parameters,
-            ));
+            neurons_vec.push(N::new(i, parameters));
         }
         Layer {
             id,
@@ -244,26 +251,47 @@ impl<N: Neuron> Layer<N> {
                         &self.weights,
                         &self.states,
                         None,
-                        time,
                     ));
                 }
             }
             Some(a_f) => {
                 match a_f.component {
                     Component::Inside(_) => {
+                        let mut save = self.neurons[0].get_parameters();
+                        let fault = match a_f.fault_type {
+                            FaultType::TransientBitFlip if (a_f.time_tbf.unwrap() != time) => None,
+                            _ => actual_faults,
+                        };
                         for n in self.neurons.iter_mut() {
-                            spikes.push(n.forward(
-                                &inputs,
-                                &self.states_weights,
-                                &self.weights,
-                                &self.states,
-                                actual_faults,
-                                time,
-                            ));
+                            if a_f.neuron_id.0 == n.get_id() {
+                                if a_f.time_tbf.is_some() {
+                                    save = n.get_parameters();
+                                }
+                                spikes.push(n.forward(
+                                    &inputs,
+                                    &self.states_weights,
+                                    &self.weights,
+                                    &self.states,
+                                    fault,
+                                ));
+                            } else {
+                                spikes.push(n.forward(
+                                    &inputs,
+                                    &self.states_weights,
+                                    &self.weights,
+                                    &self.states,
+                                    None,
+                                ));
+                            }
+                        }
+                        match a_f.fault_type {
+                            FaultType::TransientBitFlip if (a_f.time_tbf.unwrap() == time) => {
+                                self.neurons[a_f.neuron_id.0 as usize].set_parameters(&save);
+                            }
+                            _ => {}
                         }
                     }
                     Component::Outside(ref c) => {
-                        // la dichiaro qui
                         let mut save = 0.0;
                         match c {
                             OuterComponent::Weights => match a_f.fault_type {
@@ -296,7 +324,6 @@ impl<N: Neuron> Layer<N> {
                                 }
                             },
                             OuterComponent::Connections => {
-                                //TODO chiedere se stuck_at deve significare connessione persa sia se 1 o 0
                                 //TODO eventualmente mettere a 0 il self.weights[a_f.neuron_id.0][a_f.neuron_id.1]
                                 match a_f.fault_type {
                                     FaultType::StuckAtZero => {}
@@ -330,7 +357,6 @@ impl<N: Neuron> Layer<N> {
                                 None => {}
                             },
                             OuterComponent::InnerConnections => {
-                                //TODO chiedere se stuck_at deve significare connessione persa sia se 1 o 0
                                 //TODO eventualmente mettere a 0 il self.state_weights[a_f.neuron_id.0][a_f.neuron_id.1]
                                 match a_f.fault_type {
                                     FaultType::StuckAtZero => {}
@@ -346,14 +372,12 @@ impl<N: Neuron> Layer<N> {
                                 &self.weights,
                                 &self.states,
                                 None,
-                                time,
                             ));
                         }
-                        //forward
                         match a_f.fault_type {
                             FaultType::TransientBitFlip if (a_f.time_tbf.unwrap() == time) => {
                                 self.weights[a_f.neuron_id.0 as usize]
-                                    [a_f.neuron_id.1.unwrap() as usize] = save;
+                                    [a_f.neuron_id.1.unwrap() as usize] = save
                             }
                             _ => {}
                         }
