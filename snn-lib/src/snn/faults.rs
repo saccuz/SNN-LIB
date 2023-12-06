@@ -9,7 +9,7 @@ pub enum FaultType {
     TransientBitFlip,
 }
 
-// Components that can generate faults
+//Components that can generate faults
 #[derive(Clone)]
 pub enum Component {
     Inside(InnerComponent),
