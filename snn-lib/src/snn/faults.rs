@@ -16,7 +16,7 @@ pub enum Component {
     Outside(OuterComponent),
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum InnerComponent {
     Adder,      //add
     Multiplier, //mul

@@ -1,6 +1,5 @@
 use crate::snn::faults::{ActualFault, InnerComponent};
 
-//use crate::snn;
 pub trait Neuron {
     type T: NeuronParameters;
     fn new(id: u32, parameters: Option<&Self::T>) -> Self;
