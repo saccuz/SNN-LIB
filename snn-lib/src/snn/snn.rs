@@ -1,5 +1,5 @@
 use crate::snn::faults::{
-    bit_flip, stuck_at_one, stuck_at_zero, ActualFault, Component, FaultConfiguration, FaultType,
+    bit_flip, stuck_at_one, stuck_at_zero, fault_iter, ActualFault, Component, FaultConfiguration, FaultType,
     OuterComponent,
 };
 use crate::snn::lif::LifNeuronParameters;
@@ -293,7 +293,9 @@ impl<N: Neuron + Clone> Layer<N> {
                         }
                     }
                     Component::Outside(ref c) => {
-                        let mut save = 0.0;
+                        // true is for weights, false is for states_weights
+                        let mut save = (true, 0.0);
+                        let mut saved_weights = (Vec::<f64>::new(), Vec::<f64>::new()) ;
                         match c {
                             OuterComponent::Weights => match a_f.fault_type {
                                 FaultType::StuckAtZero => {
@@ -311,13 +313,12 @@ impl<N: Neuron + Clone> Layer<N> {
                                 }
                                 FaultType::TransientBitFlip => {
                                     if time == a_f.time_tbf.unwrap() {
-                                        save = self.weights[a_f.neuron_id.0 as usize]
+                                        save = (true, self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize]
-                                            .clone();
+                                            .clone());
                                         bit_flip(
                                             &mut self.weights[a_f.neuron_id.0 as usize]
-                                                [a_f.neuron_id.1.unwrap() as usize]
-                                                .clone(),
+                                                [a_f.neuron_id.1.unwrap() as usize],
                                             a_f.offset,
                                         );
                                     }
@@ -409,8 +410,30 @@ impl<N: Neuron + Clone> Layer<N> {
                         }
                         match a_f.fault_type {
                             FaultType::TransientBitFlip if (a_f.time_tbf.unwrap() == time) => {
-                                self.weights[a_f.neuron_id.0 as usize]
-                                    [a_f.neuron_id.1.unwrap() as usize] = save
+                                if a_f.bus.is_none() {
+                                    //TODO: Capire se ottimizzare il controllo
+                                    if save.0 {
+                                        self.weights[a_f.neuron_id.0 as usize]
+                                            [a_f.neuron_id.1.unwrap() as usize] = save.1
+                                    }
+                                    else {
+                                        match self.states_weights {
+                                            Some(ref mut v) => {
+                                                v[a_f.neuron_id.0 as usize][a_f.neuron_id.1.unwrap() as usize] = save.1
+                                            },
+                                            _ => {}
+                                        }
+                                    }
+                                }
+                                else {
+                                    self.weights[a_f.neuron_id.0 as usize] = saved_weights.0;
+                                    match self.states_weights {
+                                        Some(ref mut v) => {
+                                            v[a_f.neuron_id.0 as usize] = saved_weights.1;
+                                        },
+                                        _ => {}
+                                    }
+                                }
                             }
                             _ => {}
                         }

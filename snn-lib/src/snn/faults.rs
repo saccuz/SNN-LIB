@@ -96,14 +96,32 @@ impl FaultConfiguration {
                         }
                         neuron_2
                     }
+                    OuterComponent::Connections => {
+                        -1
+                    }
                 };
 
                 (
                     layer_id as u32,
-                    (neuron_id_1 as u32, Some(neuron_id_2 as u32)),
+                    (neuron_id_1 as u32, if neuron_id_2 == -1 { None } else { Some(neuron_id_2 as u32) }),
                 )
             }
         };
+
+        //###### BUS NUMBER GENERATOR FOR CONNECTIONS FAULTS######//
+        let bus = match component.clone() {
+            Component::Outside(c) => {
+                match c {
+                    OuterComponent::Connections => {
+                        Some(rng.gen_range(0..self.n_bus) )
+                    },
+                    _ => None
+                }
+            },
+            _ => None
+        };
+        //######################################################//
+
         ActualFault {
             component,
             layer_id,
