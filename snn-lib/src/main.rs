@@ -30,24 +30,7 @@ fn main() {
     };
     snn.set_parameters(&parameters_for_lif);
 
-    //let input_matrix =vec![
-    //    vec![0, 1, 0, 0, 0, 0],
-    //    vec![1, 0, 1, 0, 1, 0],
-    //    vec![0, 1, 1, 1, 1, 1],
-    //    vec![1, 0, 0, 1, 0, 0],
-    //    vec![0, 0, 1, 0, 1, 0],
-    //    vec![0, 1, 1, 1, 1, 1],
-    //    vec![1, 0, 0, 1, 0, 0],
-    //    vec![0, 0, 1, 0, 1, 0],
-    //    vec![0, 1, 1, 1, 1, 1],
-    //    vec![1, 1, 0, 0, 1, 1]
-    //];
-
     let input_matrix = Input::random(17, 6, false);
-
-    //println!("{}", input_matrix);
-
-    //println!("{:?}", snn.forward(input_matrix, Option::None));
 
     println!("{}", snn);
 
@@ -58,9 +41,43 @@ fn main() {
             Component::Outside(OuterComponent::Connections),
             Component::Outside(OuterComponent::Weights),
         ],
+
+        8,
         FaultType::StuckAtZero,
         100,
     );
 
     snn.emulate_fault(&input_matrix, &fault_configuration);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+//println!("{}", input_matrix);
+
+//println!("{:?}", snn.forward(input_matrix, Option::None));
+
+
+
+
+
+//let input_matrix =vec![
+//    vec![0, 1, 0, 0, 0, 0],
+//    vec![1, 0, 1, 0, 1, 0],
+//    vec![0, 1, 1, 1, 1, 1],
+//    vec![1, 0, 0, 1, 0, 0],
+//    vec![0, 0, 1, 0, 1, 0],
+//    vec![0, 1, 1, 1, 1, 1],
+//    vec![1, 0, 0, 1, 0, 0],
+//    vec![0, 0, 1, 0, 1, 0],
+//    vec![0, 1, 1, 1, 1, 1],
+//    vec![1, 1, 0, 0, 1, 1]
+//];

@@ -20,7 +20,7 @@ pub enum Component {
 pub enum InnerComponent {
     Adder,      //add
     Multiplier, //mul
-    Divider,
+    Divider,    //div
     Comparator, //compare
     Threshold,  //v_th
     Membrane,   //v_mem
@@ -46,6 +46,7 @@ pub struct ActualFault {
 
 pub struct FaultConfiguration {
     components: Vec<Component>,
+    n_bus: usize,
     fault_type: FaultType,
     n_occurrences: u32,
 }
@@ -81,10 +82,10 @@ impl FaultConfiguration {
                 let layer_id = rng.gen_range(1..layers_info.len());
                 let neuron_id_1 = rng.gen_range(0..layers_info[layer_id]);
                 let neuron_id_2 = match c {
-                    OuterComponent::Weights | OuterComponent::Connections => {
-                        rng.gen_range(0..layers_info[layer_id - 1])
+                    OuterComponent::Weights => {
+                        rng.gen_range(0..layers_info[layer_id - 1]) as i32
                     }
-                    OuterComponent::InnerWeights | OuterComponent::InnerConnections => {
+                    OuterComponent::InnerWeights => {
                         let mut neuron_2 = rng.gen_range(0..layers_info[layer_id]);
                         if neuron_id_1 == neuron_2 {
                             if neuron_2 == layers_info[layer_id] - 1 {
@@ -96,6 +97,7 @@ impl FaultConfiguration {
                         neuron_2
                     }
                 };
+
                 (
                     layer_id as u32,
                     (neuron_id_1 as u32, Some(neuron_id_2 as u32)),
@@ -157,4 +159,12 @@ pub fn apply_fault(mut result: f64, actual_fault: Option<&ActualFault>, its_me: 
         _ => result,
     };
     ret
+}
+
+pub fn fault_iter(weights: &mut Vec<f64>, a_f: &ActualFault, f: &dyn Fn(&mut f64, u8) -> ()) {
+    for i in 0..weights.len() {
+        if (i+1) % (a_f.bus.unwrap()+1) == 0 {
+            f(&mut weights[i], a_f.offset)
+        }
+    }
 }

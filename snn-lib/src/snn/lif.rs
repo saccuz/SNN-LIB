@@ -200,6 +200,7 @@ impl Neuron for LifNeuron {
 
         // rest + (mem - rest) * exp(dt/tau) + sum(w*x -wi*xi)
         // Questa operazione è stata divisa in più parti ed ogni operazione è stata simulata
+        //TODO: questa assegnazione cambia il valore di v_mem, ma va RIAPPLICATO il fault
         self.v_mem = LifNeuron::add(
             LifNeuron::add(
                 LifNeuron::mul(
