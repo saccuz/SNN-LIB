@@ -31,8 +31,7 @@ pub enum InnerComponent {
 pub enum OuterComponent {
     Weights,          //weights
     InnerWeights,     //state_weights
-    Connections,      //weight = 0
-    InnerConnections, //state_weight = 0
+    Connections,      //weight bus
 }
 
 pub struct ActualFault {
@@ -41,6 +40,7 @@ pub struct ActualFault {
     pub neuron_id: (u32, Option<u32>),
     pub fault_type: FaultType,
     pub time_tbf: Option<usize>,
+    pub bus: Option<usize>,
     pub offset: u8,
 }
 
@@ -52,9 +52,10 @@ pub struct FaultConfiguration {
 }
 
 impl FaultConfiguration {
-    pub fn new(components: Vec<Component>, fault_type: FaultType, n_occurrences: u32) -> Self {
+    pub fn new(components: Vec<Component>, n_bus: usize, fault_type: FaultType, n_occurrences: u32) -> Self {
         FaultConfiguration {
             components,
+            n_bus,
             fault_type,
             n_occurrences,
         }
@@ -94,7 +95,7 @@ impl FaultConfiguration {
                                 neuron_2 += 1;
                             }
                         }
-                        neuron_2
+                        neuron_2 as i32
                     }
                     OuterComponent::Connections => {
                         -1
@@ -128,6 +129,7 @@ impl FaultConfiguration {
             neuron_id,
             fault_type: self.fault_type.clone(),
             time_tbf,
+            bus,
             offset,
         }
     }

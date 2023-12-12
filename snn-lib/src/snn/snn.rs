@@ -2,9 +2,8 @@ use crate::snn::faults::{
     bit_flip, stuck_at_one, stuck_at_zero, fault_iter, ActualFault, Component, FaultConfiguration, FaultType,
     OuterComponent,
 };
-use crate::snn::lif::LifNeuronParameters;
 use crate::snn::matrix::Input;
-use crate::snn::neuron::{Neuron, NeuronParameters};
+use crate::snn::neuron::Neuron;
 use rand::Rng;
 use std::fmt::{Display, Formatter, Result};
 
@@ -390,14 +389,6 @@ impl<N: Neuron + Clone> Layer<N> {
                                 },
                                 None => {}
                             },
-                            OuterComponent::InnerConnections => {
-                                //TODO eventualmente mettere a 0 il self.state_weights[a_f.neuron_id.0][a_f.neuron_id.1]
-                                match a_f.fault_type {
-                                    FaultType::StuckAtZero => {}
-                                    FaultType::StuckAtOne => {}
-                                    FaultType::TransientBitFlip => {}
-                                }
-                            }
                         }
                         for n in self.neurons.iter_mut() {
                             spikes.push(n.forward(
@@ -452,4 +443,5 @@ impl<N: Neuron + Clone> Layer<N> {
             n.set_parameters(parameters);
         }
     }
+
 }

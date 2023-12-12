@@ -37,9 +37,9 @@ fn main() {
     // Fault injection
     let fault_configuration = FaultConfiguration::new(
         vec![
-            Component::Inside(InnerComponent::Adder),
-            Component::Outside(OuterComponent::Connections),
-            Component::Outside(OuterComponent::Weights),
+           Component::Inside(InnerComponent::Adder),
+           Component::Outside(OuterComponent::Connections),
+           Component::Outside(OuterComponent::Weights),
         ],
 
         8,
