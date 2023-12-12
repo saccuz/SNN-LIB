@@ -1,5 +1,7 @@
+use crate::snn::neuron::SpecificComponent;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
+use std::fmt::Debug;
 
 // Which of the three basic types of fault is going to happen
 #[derive(Clone)]
@@ -10,32 +12,21 @@ pub enum FaultType {
 }
 
 //Components that can generate faults
-#[derive(Clone)]
-pub enum Component {
-    Inside(InnerComponent),
+#[derive(Clone, Debug)]
+pub enum Component<D: SpecificComponent> {
+    Inside(D),
     Outside(OuterComponent),
 }
 
-#[derive(Clone, PartialEq)]
-pub enum InnerComponent {
-    Adder,      //add
-    Multiplier, //mul
-    Divider,    //div
-    Comparator, //compare
-    Threshold,  //v_th
-    Membrane,   //v_mem
-    Rest,       //v_rest
-}
-
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum OuterComponent {
-    Weights,          //weights
-    InnerWeights,     //state_weights
-    Connections,      //weight bus
+    Weights,      //weights
+    InnerWeights, //state_weights
+    Connections,  //weight bus
 }
 
-pub struct ActualFault {
-    pub component: Component,
+pub struct ActualFault<D: SpecificComponent> {
+    pub component: Component<D>,
     pub layer_id: u32,
     pub neuron_id: (u32, Option<u32>),
     pub fault_type: FaultType,
@@ -44,15 +35,20 @@ pub struct ActualFault {
     pub offset: u8,
 }
 
-pub struct FaultConfiguration {
-    components: Vec<Component>,
+pub struct FaultConfiguration<D: SpecificComponent + Clone + Debug> {
+    components: Vec<Component<D>>,
     n_bus: usize,
     fault_type: FaultType,
     n_occurrences: u32,
 }
 
-impl FaultConfiguration {
-    pub fn new(components: Vec<Component>, n_bus: usize, fault_type: FaultType, n_occurrences: u32) -> Self {
+impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
+    pub fn new(
+        components: Vec<Component<D>>,
+        n_bus: usize,
+        fault_type: FaultType,
+        n_occurrences: u32,
+    ) -> Self {
         FaultConfiguration {
             components,
             n_bus,
@@ -65,7 +61,7 @@ impl FaultConfiguration {
         self.n_occurrences
     }
 
-    pub fn get_actual_faults(&self, layers_info: Vec<usize>, total_time: usize) -> ActualFault {
+    pub fn get_actual_faults(&self, layers_info: Vec<usize>, total_time: usize) -> ActualFault<D> {
         let mut rng = thread_rng();
         let component = (*self.components.choose(&mut rng).unwrap()).clone();
         let time_tbf = match self.fault_type {
@@ -83,9 +79,7 @@ impl FaultConfiguration {
                 let layer_id = rng.gen_range(1..layers_info.len());
                 let neuron_id_1 = rng.gen_range(0..layers_info[layer_id]);
                 let neuron_id_2 = match c {
-                    OuterComponent::Weights => {
-                        rng.gen_range(0..layers_info[layer_id - 1]) as i32
-                    }
+                    OuterComponent::Weights => rng.gen_range(0..layers_info[layer_id - 1]) as i32,
                     OuterComponent::InnerWeights => {
                         let mut neuron_2 = rng.gen_range(0..layers_info[layer_id]);
                         if neuron_id_1 == neuron_2 {
@@ -97,32 +91,35 @@ impl FaultConfiguration {
                         }
                         neuron_2 as i32
                     }
-                    OuterComponent::Connections => {
-                        -1
-                    }
+                    OuterComponent::Connections => -1,
                 };
 
                 (
                     layer_id as u32,
-                    (neuron_id_1 as u32, if neuron_id_2 == -1 { None } else { Some(neuron_id_2 as u32) }),
+                    (
+                        neuron_id_1 as u32,
+                        if neuron_id_2 == -1 {
+                            None
+                        } else {
+                            Some(neuron_id_2 as u32)
+                        },
+                    ),
                 )
             }
         };
 
         //###### BUS NUMBER GENERATOR FOR CONNECTIONS FAULTS######//
         let bus = match component.clone() {
-            Component::Outside(c) => {
-                match c {
-                    OuterComponent::Connections => {
-                        Some(rng.gen_range(0..self.n_bus) )
-                    },
-                    _ => None
-                }
+            Component::Outside(c) => match c {
+                OuterComponent::Connections => Some(rng.gen_range(0..self.n_bus)),
+                _ => None,
             },
-            _ => None
+            _ => None,
         };
         //######################################################//
 
+        // Uncomment the following line for nice output printing
+        //println!("The component selected for fault injection in this repetition is {:?}", component);
         ActualFault {
             component,
             layer_id,
@@ -166,7 +163,11 @@ pub fn bit_flip(x: &mut f64, offset: u8) -> () {
     *x = f64::from_bits(value_bits);
 }
 
-pub fn apply_fault(mut result: f64, actual_fault: Option<&ActualFault>, its_me: bool) -> f64 {
+pub fn apply_fault<D: SpecificComponent>(
+    mut result: f64,
+    actual_fault: Option<&ActualFault<D>>,
+    its_me: bool,
+) -> f64 {
     let ret = match actual_fault {
         Some(a_f) if its_me => {
             match a_f.fault_type {
@@ -181,9 +182,13 @@ pub fn apply_fault(mut result: f64, actual_fault: Option<&ActualFault>, its_me: 
     ret
 }
 
-pub fn fault_iter(weights: &mut Vec<f64>, a_f: &ActualFault, f: &dyn Fn(&mut f64, u8) -> ()) {
+pub fn fault_iter<D: SpecificComponent>(
+    weights: &mut Vec<f64>,
+    a_f: &ActualFault<D>,
+    f: &dyn Fn(&mut f64, u8) -> (),
+) {
     for i in 0..weights.len() {
-        if (i+1) % (a_f.bus.unwrap()+1) == 0 {
+        if (i + 1) % (a_f.bus.unwrap() + 1) == 0 {
             f(&mut weights[i], a_f.offset)
         }
     }

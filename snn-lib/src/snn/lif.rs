@@ -1,16 +1,12 @@
-use crate::snn::faults::{
-    apply_fault, bit_flip, stuck_at_one, stuck_at_zero, ActualFault, Component, FaultType,
-    InnerComponent,
-};
-//Make snn from snn.rs usable in this file
-use crate::snn::neuron::Neuron;
+use crate::snn::faults::{apply_fault, ActualFault, Component};
 use crate::snn::neuron::NeuronParameters;
+use crate::snn::neuron::{Neuron, SpecificComponent};
 
 #[derive(Clone, Copy)]
 pub enum ResetMode {
     Zero,
     RestingPotential,
-    Subthreshold,
+    SubThreshold,
 }
 
 #[derive(Clone)]
@@ -22,6 +18,19 @@ pub struct LifNeuronParameters {
 }
 
 impl NeuronParameters for LifNeuronParameters {}
+
+#[derive(Clone, PartialEq, Debug)]
+pub enum LifSpecificComponent {
+    Adder,      //add
+    Multiplier, //mul
+    Divider,    //div
+    Comparator, //compare
+    Threshold,  //v_th
+    Membrane,   //v_mem
+    Rest,       //v_rest
+}
+
+impl SpecificComponent for LifSpecificComponent {}
 
 #[derive(Clone)]
 pub struct LifNeuron {
@@ -38,7 +47,7 @@ impl LifNeuron {
     fn scalar_product(
         inputs: &Vec<u8>,
         weights: &Vec<f64>,
-        actual_fault: Option<&ActualFault>,
+        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
         ops: &Vec<bool>,
     ) -> f64 {
         let mut scalar = 0.0;
@@ -61,7 +70,7 @@ impl LifNeuron {
         states: &Vec<u8>,
         weights: &Vec<f64>,
         states_weights: Option<&Vec<f64>>,
-        actual_fault: Option<&ActualFault>,
+        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
         ops: &Vec<bool>,
     ) -> f64 {
         //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
@@ -83,18 +92,38 @@ impl LifNeuron {
 
     //################################# OPERAZIONI SIMULATE #################################//
     //#region Operazioni
-    fn add(x: f64, y: f64, actual_fault: Option<&ActualFault>, its_me: bool) -> f64 {
+    fn add(
+        x: f64,
+        y: f64,
+        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+        its_me: bool,
+    ) -> f64 {
         apply_fault(x + y, actual_fault, its_me)
     }
-    fn mul(x: f64, y: f64, actual_fault: Option<&ActualFault>, its_me: bool) -> f64 {
+    fn mul(
+        x: f64,
+        y: f64,
+        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+        its_me: bool,
+    ) -> f64 {
         apply_fault(x * y, actual_fault, its_me)
     }
 
-    fn div(x: f64, y: f64, actual_fault: Option<&ActualFault>, its_me: bool) -> f64 {
+    fn div(
+        x: f64,
+        y: f64,
+        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+        its_me: bool,
+    ) -> f64 {
         apply_fault(x / y, actual_fault, its_me)
     }
 
-    fn compare(x: f64, y: f64, actual_fault: Option<&ActualFault>, its_me: bool) -> u8 {
+    fn compare(
+        x: f64,
+        y: f64,
+        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+        its_me: bool,
+    ) -> u8 {
         apply_fault(((x > y) as u8) as f64, actual_fault, its_me) as u8
     }
 
@@ -104,6 +133,7 @@ impl LifNeuron {
 
 impl Neuron for LifNeuron {
     type T = LifNeuronParameters;
+    type D = LifSpecificComponent;
     // Creates a new LifNeuron
     // (t_s_last is set to 0 by default at the beginning, no previous impulse received from the beginning of the snn existence)
     fn new(id: u32, parameters: Option<&LifNeuronParameters>) -> Self {
@@ -156,7 +186,7 @@ impl Neuron for LifNeuron {
         states_weights: &Option<Vec<Vec<f64>>>,
         weights: &Vec<Vec<f64>>,
         states: &Vec<u8>,
-        actual_fault: Option<&ActualFault>,
+        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
     ) -> u8 {
         self.t_s_last += 1;
 
@@ -164,13 +194,13 @@ impl Neuron for LifNeuron {
         match actual_fault {
             Some(a_f) => match &a_f.component {
                 Component::Inside(real_comp) => match real_comp {
-                    InnerComponent::Adder => ops[0] = true,
-                    InnerComponent::Multiplier => ops[1] = true,
-                    InnerComponent::Comparator => ops[2] = true,
-                    InnerComponent::Threshold => ops[3] = true,
-                    InnerComponent::Membrane => ops[4] = true,
-                    InnerComponent::Rest => ops[5] = true,
-                    InnerComponent::Divider => ops[6] = true,
+                    LifSpecificComponent::Adder => ops[0] = true,
+                    LifSpecificComponent::Multiplier => ops[1] = true,
+                    LifSpecificComponent::Comparator => ops[2] = true,
+                    LifSpecificComponent::Threshold => ops[3] = true,
+                    LifSpecificComponent::Membrane => ops[4] = true,
+                    LifSpecificComponent::Rest => ops[5] = true,
+                    LifSpecificComponent::Divider => ops[6] = true,
                 },
                 _ => {}
             },
@@ -199,8 +229,9 @@ impl Neuron for LifNeuron {
             LifNeuron::div(-((self.t_s_last) as f64), self.tau, actual_fault, ops[6]);
 
         // rest + (mem - rest) * exp(dt/tau) + sum(w*x -wi*xi)
-        // Questa operazione è stata divisa in più parti ed ogni operazione è stata simulata
-        //TODO: questa assegnazione cambia il valore di v_mem, ma va RIAPPLICATO il fault
+        // Questa operazione:
+        // self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
+        // è stata divisa in più parti ed ogni operazione è stata simulata con l'eventuale fault
         self.v_mem = LifNeuron::add(
             LifNeuron::add(
                 LifNeuron::mul(
@@ -218,8 +249,6 @@ impl Neuron for LifNeuron {
             ops[0],
         );
 
-        //self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
-
         let spike = LifNeuron::compare(self.v_mem, self.v_th, actual_fault, ops[2]); //if v_mem>v_th then spike=1 else spike=0
 
         if spike == 1 {
@@ -227,11 +256,14 @@ impl Neuron for LifNeuron {
             self.v_mem = match self.r_type {
                 ResetMode::Zero => 0.0,
                 ResetMode::RestingPotential => self.v_rest,
-                ResetMode::Subthreshold => {
+                ResetMode::SubThreshold => {
                     LifNeuron::add(self.v_mem, -self.v_th, actual_fault, ops[0])
                 }
             }
         }
+        // Corrupting v_mem memory when the value is written back to memory
+        self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
+
         spike
     }
 }

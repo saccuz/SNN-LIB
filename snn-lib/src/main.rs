@@ -1,9 +1,7 @@
 mod snn;
 
-use crate::snn::faults::{
-    Component, FaultConfiguration, FaultType, InnerComponent, OuterComponent,
-};
-use crate::snn::lif::{LifNeuron, LifNeuronParameters, ResetMode};
+use crate::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponent};
+use crate::snn::lif::{LifNeuron, LifNeuronParameters, LifSpecificComponent, ResetMode};
 use crate::snn::matrix::{Input, Matrix};
 use crate::snn::snn::Snn;
 
@@ -37,11 +35,10 @@ fn main() {
     // Fault injection
     let fault_configuration = FaultConfiguration::new(
         vec![
-           Component::Inside(InnerComponent::Adder),
-           Component::Outside(OuterComponent::Connections),
-           Component::Outside(OuterComponent::Weights),
+            Component::Inside(LifSpecificComponent::Membrane),
+            Component::Outside(OuterComponent::Connections),
+            Component::Outside(OuterComponent::Weights),
         ],
-
         8,
         FaultType::StuckAtZero,
         100,
@@ -50,24 +47,9 @@ fn main() {
     snn.emulate_fault(&input_matrix, &fault_configuration);
 }
 
-
-
-
-
-
-
-
-
-
-
-
 //println!("{}", input_matrix);
 
 //println!("{:?}", snn.forward(input_matrix, Option::None));
-
-
-
-
 
 //let input_matrix =vec![
 //    vec![0, 1, 0, 0, 0, 0],
