@@ -441,7 +441,8 @@ impl<N: Neuron + Clone> Layer<N> {
                                     if save.0 {
                                         self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize] = save.1
-                                    } else {
+                                    }
+                                    else {
                                         match self.states_weights {
                                             Some(ref mut v) => {
                                                 v[a_f.neuron_id.0 as usize]
