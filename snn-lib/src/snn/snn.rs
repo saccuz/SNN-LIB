@@ -438,7 +438,6 @@ impl<N: Neuron + Clone> Layer<N> {
                         match a_f.fault_type {
                             FaultType::TransientBitFlip if (a_f.time_tbf.unwrap() == time) => {
                                 if a_f.bus.is_none() {
-                                    //TODO: Capire se ottimizzare il controllo
                                     if save.0 {
                                         self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize] = save.1
@@ -451,7 +450,8 @@ impl<N: Neuron + Clone> Layer<N> {
                                             _ => {}
                                         }
                                     }
-                                } else {
+                                }
+                                else {
                                     self.weights[a_f.neuron_id.0 as usize] = saved_weights.0;
                                     match self.states_weights {
                                         Some(ref mut v) => {
