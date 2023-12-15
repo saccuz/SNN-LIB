@@ -3,7 +3,7 @@ use std::fmt::Debug;
 
 pub trait Neuron {
     type T: NeuronParameters;
-    type D: SpecificComponent + Clone + Debug;
+    type D: SpecificComponent + Clone + Debug + Sync;
     fn new(id: u32, parameters: Option<&Self::T>) -> Self;
     fn set_parameters(&mut self, parameters: &Self::T) -> ();
     fn get_parameters(&self) -> Self::T;

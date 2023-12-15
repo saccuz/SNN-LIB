@@ -6,6 +6,9 @@ use crate::snn::matrix::Input;
 use crate::snn::neuron::Neuron;
 use rand::Rng;
 use std::fmt::{Display, Formatter, Result};
+use crossbeam::channel::{unbounded, Receiver, Sender};
+use std::thread;
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Copy)]
 pub enum NeuronType {
@@ -17,7 +20,7 @@ pub struct Snn<N: Neuron> {
     layers: Vec<Layer<N>>,
 }
 
-impl<N: Neuron + Clone> Snn<N> {
+impl<N: Neuron + Clone + Send> Snn<N> {
     pub fn new(
         n_inputs: u32,
         layers: Vec<u32>,
@@ -88,35 +91,74 @@ impl<N: Neuron + Clone> Snn<N> {
             Some(fault_configuration) => {
                 let actual_faults = fault_configuration
                     .get_actual_faults(self.get_layer_n_neurons(), input_matrix.rows);
-                for (idx, input_array) in input_matrix.data.iter().enumerate() {
-                    let mut y = Vec::new();
-                    for (layer_idx, l) in self.layers.iter_mut().enumerate() {
-                        //La prima condizione equivale a let y = input per il primo layer
-                        //La seconda condizione è un check sul fault
-                        y = l.forward(
-                            if layer_idx == 0 { input_array } else { &y },
-                            if l.id == actual_faults.layer_id {
-                                Some(&actual_faults)
-                            } else {
-                                None
-                            },
-                            idx,
-                        )
+                thread::scope(|scope|{
+                    let n_layers = self.layers.len();
+                    for (layer_idx, l ) in self.layers.iter_mut().enumerate() {
+                        let rx_clone_to_send1 = layers_channel_receivers[layer_idx].clone();
+                        let tx_clone_to_send2 = layers_channel_senders[layer_idx + 1].clone();
+
+                        scope.spawn(|| {
+                            Snn::forward_parallel(l,
+                                                  rx_clone_to_send1,
+                                                  tx_clone_to_send2,
+                                                  if l.id == actual_faults.layer_id {
+                                                      Arc::new(Some(&actual_faults))
+                                                  } else {
+                                                      Arc::new(None)
+                                                  })
+                        });
                     }
-                    out.push(y.clone());
-                }
+                    for (idx, input_array) in input_matrix.data.iter().enumerate() {
+                        layers_channel_senders[0].send((idx , input_array.clone())).unwrap();
+                    }
+                    // Actually just the first sender should be dropped..... CHECK THIS
+                    drop(layers_channel_senders);
+
+                    // Receiving the final result for the current input_array
+                    while let Ok(result) = layers_channel_receivers[n_layers].recv() {
+                        out.push(result.1.clone());
+                    }
+                });
                 out
-            }
+            },
             None => {
-                for input_array in &input_matrix.data {
-                    let mut y = Vec::new();
-                    for (layer_idx, l) in self.layers.iter_mut().enumerate() {
-                        y = l.forward(if layer_idx == 0 { input_array } else { &y }, None, 0);
+                //We create n+1 channel:
+                //input (layer 0)
+                //layer i
+                //...
+                //output (n+1 | output receiver)
+                thread::scope(|scope|{
+                    let n_layers = self.layers.len();
+                    for (layer_idx, l ) in self.layers.iter_mut().enumerate() {
+                        let rx_clone_to_send1 = layers_channel_receivers[layer_idx].clone();
+                        let tx_clone_to_send2 = layers_channel_senders[layer_idx + 1].clone();
+                        scope.spawn(|| {
+                            Snn::forward_parallel(l, rx_clone_to_send1, tx_clone_to_send2, Arc::new(None));
+                        });
                     }
-                    out.push(y.clone());
-                }
+                    for (idx, input_array) in input_matrix.data.iter().enumerate() {
+                        layers_channel_senders[0].send((idx,input_array.clone())).unwrap();
+                    }
+                    // Actually just the first sender should be dropped..... CHECK THIS
+                    drop(layers_channel_senders);
+
+                    // Receiving the final result for the current input_array
+                    while let Ok(result) = layers_channel_receivers[n_layers].recv() {
+                        out.push(result.1.clone());
+                    }
+                });
                 out
             }
+        }
+    }
+
+    fn forward_parallel(l :&mut Layer<N>, rx: Receiver<(usize, Vec<u8>)>, tx: Sender<(usize, Vec<u8>)>, actual_fault: Arc<Option<&ActualFault<N::D>>>) {
+        let mut out = Vec::new();
+        let fault = *actual_fault;
+        while let Ok(value) = rx.recv() {
+            //Do neuron stuff here
+            out = l.forward(&value.1, fault, value.0);
+            tx.send((value.0, out)).unwrap();
         }
     }
 
@@ -130,16 +172,10 @@ impl<N: Neuron + Clone> Snn<N> {
             .iter()
             .map(|x| (x.weights.clone(), x.states_weights.clone()))
             .collect::<Vec<(Vec<Vec<f64>>, Option<Vec<Vec<f64>>>)>>();
+
         for i in 0..fault_configuration.get_n_occurrences() {
-            let ll = self
-                .layers
-                .iter()
-                .map(|x| (*x).clone())
-                .collect::<Vec<Layer<N>>>();
 
-            let mut cloned = Snn::from(ll);
-
-            let result = cloned.forward(input_matrix, Some(fault_configuration));
+            let result = self.clone().forward(input_matrix, Some(fault_configuration));
 
             // First version: nice output printing, Second version: debug speed of light
             //println!("and the result for the {} repetition is {:?}\n", i, result);
