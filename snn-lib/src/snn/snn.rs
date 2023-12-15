@@ -86,6 +86,35 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         input_matrix: &Input,
         fault_configuration: Option<&FaultConfiguration<N::D>>,
     ) -> Vec<Vec<u8>> {
+        let mut layers_channel_senders = Vec::new();
+        let mut layers_channel_receivers= Vec::new();
+
+        for _ in 0..(self.layers.len()+1) {
+            let channel = unbounded::<(usize, Vec<u8>)>();
+            layers_channel_senders.push(channel.0);
+            layers_channel_receivers.push(channel.1);
+        }
+
+        /* OLD VERSION of Some branch (keep it just for sure)
+        for (idx, input_array) in input_matrix.data.iter().enumerate() {
+                    let mut y = Vec::new();
+                    for (layer_idx, l) in self.layers.iter_mut().enumerate() {
+                        //La prima condizione equivale a let y = input per il primo layer
+                        //La seconda condizione è un check sul fault
+                        y = l.forward(
+                            if layer_idx == 0 { input_array } else { &y },
+                            if l.id == actual_faults.layer_id {
+                                Some(&actual_faults)
+                            } else {
+                                None
+                            },
+                            idx,
+                        )
+                    }
+                    out.push(y.clone());
+                }
+                out
+        */
         let mut out = Vec::new();
         match fault_configuration {
             Some(fault_configuration) => {
