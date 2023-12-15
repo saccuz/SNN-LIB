@@ -272,6 +272,7 @@ impl<N: Neuron> Display for Snn<N> {
         Ok(())
     }
 }
+
 #[derive(Clone)]
 struct Layer<N: Neuron> {
     id: u32,
@@ -309,6 +310,7 @@ impl<N: Neuron + Clone> Layer<N> {
         time: usize,
     ) -> Vec<u8> {
         let mut spikes = Vec::<u8>::new();
+
         match actual_faults {
             None => {
                 for n in self.neurons.iter_mut() {

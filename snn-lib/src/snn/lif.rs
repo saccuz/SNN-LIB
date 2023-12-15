@@ -58,7 +58,7 @@ impl LifNeuron {
             //somma per ogni neurone
             scalar = LifNeuron::add(
                 scalar,
-                LifNeuron::mul((*x as f64), weights[idx], actual_fault, ops[1]),
+                LifNeuron::mul(*x as f64, weights[idx], actual_fault, ops[1]),
                 actual_fault,
                 ops[0],
             ); // moltiplica la spike per il peso dell'input

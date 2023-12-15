@@ -149,7 +149,7 @@ pub fn stuck_at_one(x: &mut f64, offset: u8) -> () {
 
     value_bits |= 1_u64 << offset;
 
-    let result = f64::from_bits(value_bits);
+    //let result = f64::from_bits(value_bits);
     *x = f64::from_bits(value_bits);
 }
 

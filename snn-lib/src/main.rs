@@ -28,7 +28,19 @@ fn main() {
     };
     snn.set_parameters(&parameters_for_lif);
 
-    let input_matrix = Input::random(17, 6, false);
+    //let input_matrix = Input::random(17, 6, false);
+    let input_matrix = <Input as Matrix>::from(vec![
+        vec![0,0,0,0,0,1],
+        vec![0,0,0,0,1,0],
+        vec![0,0,0,1,0,0],
+        vec![0,0,1,0,0,0],
+        vec![0,1,0,0,0,0],
+        vec![1,0,0,0,0,0],
+        vec![1,0,0,0,0,1],
+        vec![1,0,0,0,1,0],
+        vec![1,0,0,1,0,0],
+        vec![1,0,1,0,0,0]
+    ]);
 
     println!("{}", snn);
 
