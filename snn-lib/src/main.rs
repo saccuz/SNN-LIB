@@ -30,16 +30,16 @@ fn main() {
 
     //let input_matrix = Input::random(17, 6, false);
     let input_matrix = <Input as Matrix>::from(vec![
-        vec![0,0,0,0,0,1],
-        vec![0,0,0,0,1,0],
-        vec![0,0,0,1,0,0],
-        vec![0,0,1,0,0,0],
-        vec![0,1,0,0,0,0],
-        vec![1,0,0,0,0,0],
-        vec![1,0,0,0,0,1],
-        vec![1,0,0,0,1,0],
-        vec![1,0,0,1,0,0],
-        vec![1,0,1,0,0,0]
+        vec![0, 0, 0, 0, 0, 1],
+        vec![0, 0, 0, 0, 1, 0],
+        vec![0, 0, 0, 1, 0, 0],
+        vec![0, 0, 1, 0, 0, 0],
+        vec![0, 1, 0, 0, 0, 0],
+        vec![1, 0, 0, 0, 0, 0],
+        vec![1, 0, 0, 0, 0, 1],
+        vec![1, 0, 0, 0, 1, 0],
+        vec![1, 0, 0, 1, 0, 0],
+        vec![1, 0, 1, 0, 0, 0],
     ]);
 
     println!("{}", snn);
@@ -56,14 +56,12 @@ fn main() {
         100,
     );
 
-    snn.emulate_fault(&input_matrix, &fault_configuration);
+    //snn.emulate_fault(&input_matrix, &fault_configuration);
+    println!("{:?}", snn.forward(&input_matrix, Option::None));
     //println!("\nSo the final result is: {:?}", snn.forward(&input_matrix, None));
-
 }
 
 //println!("{}", input_matrix);
-
-//println!("{:?}", snn.forward(input_matrix, Option::None));
 
 //let input_matrix =vec![
 //    vec![0, 1, 0, 0, 0, 0],

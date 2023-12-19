@@ -4,11 +4,11 @@ use crate::snn::faults::{
 };
 use crate::snn::matrix::Input;
 use crate::snn::neuron::Neuron;
+use crossbeam::channel::{unbounded, Receiver, Sender};
 use rand::Rng;
 use std::fmt::{Display, Formatter, Result};
-use crossbeam::channel::{unbounded, Receiver, Sender};
+use std::sync::Arc;
 use std::thread;
-use std::sync::{Arc, Mutex};
 
 #[derive(Clone, Copy)]
 pub enum NeuronType {
@@ -72,7 +72,6 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         }
     }
 
-    //
     fn get_layer_n_neurons(&self) -> Vec<usize> {
         let mut layers_info = Vec::new();
         for l in self.layers.iter() {
@@ -81,98 +80,175 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         layers_info
     }
 
+    fn layer_per_thread(&mut self) -> Vec<Vec<&mut Layer<N>>> {
+        //Compute the number of layers to better parallelize the network
+        //That's because if the number of layers outnumbers the number of threads
+        //it would cause a growth in the overall overhead
+
+        let n_th = num_cpus::get();
+        let count = self.layers.len() % n_th;
+        let mut l_per_t = Vec::new();
+        for i in 0..n_th {
+            if i < count {
+                l_per_t.push(self.layers.len() / n_th + 1);
+            } else {
+                if (self.layers.len() / n_th) != 0 {
+                    l_per_t.push(self.layers.len() / n_th)
+                }
+            }
+        }
+        println!("{:?}", l_per_t);
+        //3 2 2 - > 3, 5, 7
+        //vettore -> vec, vec, vec
+        //let mut s = Vec::new();
+        //for j in l_per_t{
+        //    let mut x = Vec::new();
+        //    for (idx, l) in self.layers.iter_mut().enumerate() {
+        //        if idx < j {
+        //            x.push(l);
+        //        }
+        //    }
+        //    s.push(x);
+        //}
+        let mut s = Vec::new();
+        for _ in 0..l_per_t.len() {
+            s.push(Vec::new())
+        }
+
+        //let mut idx = 0;
+        //while s[idx].len() < l_per_t[idx] {
+        //    for l in self.layers.iter_mut() {
+        //
+        //    }
+        //}
+
+        //for (idx, l) in self.layers.iter_mut().enumerate() {
+        //    for (jdx, lp) in l_per_t.iter().enumerate() {
+        //        if idx < *lp {
+        //            s[jdx].push(l);
+        //            break
+        //        }
+        //    }
+        //
+
+        //let idx = 0;
+        //let count = 0;
+        //for (idj, el) in s.iter_mut().enumerate() {
+        //    if count < l_per_t[idj]{
+        //        el.push(&mut self.layers[idx]);
+        //        count += 1;
+        //    }
+        //    else {
+        //        continue;
+        //    }
+        //    idx +=1;
+        //}
+
+        //s[0].push(&mut self.layers[0]);
+        //
+        //s[1].push(&mut self.layers[1]);
+        //
+        //s[2].push(&mut self.layers[2]);
+
+        let mut pos = 0;
+        for l in self.layers.iter_mut() {
+            if l_per_t[pos] > s[pos].len() {
+                s[pos].push(l);
+            } else {
+                pos += 1;
+                s[pos].push(l);
+            }
+        }
+
+        // l_per_t;
+        s
+    }
+
     pub fn forward(
         &mut self,
         input_matrix: &Input,
         fault_configuration: Option<&FaultConfiguration<N::D>>,
     ) -> Vec<Vec<u8>> {
         let mut layers_channel_senders = Vec::new();
-        let mut layers_channel_receivers= Vec::new();
+        let mut layers_channel_receivers = Vec::new();
 
-        for _ in 0..(self.layers.len()+1) {
+        //for _ in 0..(self.layers.len()+1) {
+        for _ in 0..((self.layers.len() % num_cpus::get()) + 1) {
             let channel = unbounded::<(usize, Vec<u8>)>();
             layers_channel_senders.push(channel.0);
             layers_channel_receivers.push(channel.1);
         }
 
-        /* OLD VERSION of Some branch (keep it just for sure)
-        for (idx, input_array) in input_matrix.data.iter().enumerate() {
-                    let mut y = Vec::new();
-                    for (layer_idx, l) in self.layers.iter_mut().enumerate() {
-                        //La prima condizione equivale a let y = input per il primo layer
-                        //La seconda condizione è un check sul fault
-                        y = l.forward(
-                            if layer_idx == 0 { input_array } else { &y },
-                            if l.id == actual_faults.layer_id {
-                                Some(&actual_faults)
-                            } else {
-                                None
-                            },
-                            idx,
-                        )
-                    }
-                    out.push(y.clone());
-                }
-                out
-        */
+        println!("lunghezza senders {}", layers_channel_senders.len());
+
         let mut out = Vec::new();
         match fault_configuration {
             Some(fault_configuration) => {
                 let actual_faults = fault_configuration
                     .get_actual_faults(self.get_layer_n_neurons(), input_matrix.rows);
-                thread::scope(|scope|{
-                    let n_layers = self.layers.len();
-                    for (layer_idx, l ) in self.layers.iter_mut().enumerate() {
-                        let rx_clone_to_send1 = layers_channel_receivers[layer_idx].clone();
-                        let tx_clone_to_send2 = layers_channel_senders[layer_idx + 1].clone();
+                let mut layer_distribution = self.layer_per_thread();
+                let th_len = layer_distribution.len();
+                thread::scope(|scope| {
+                    for (thread_idx, v_l) in layer_distribution.iter_mut().enumerate() {
+                        let rx_clone_to_send1 = layers_channel_receivers[thread_idx].clone();
+                        let tx_clone_to_send2 = layers_channel_senders[thread_idx + 1].clone();
 
                         scope.spawn(|| {
-                            Snn::forward_parallel(l,
-                                                  rx_clone_to_send1,
-                                                  tx_clone_to_send2,
-                                                  if l.id == actual_faults.layer_id {
-                                                      Arc::new(Some(&actual_faults))
-                                                  } else {
-                                                      Arc::new(None)
-                                                  })
+                            Snn::forward_parallel(
+                                v_l,
+                                rx_clone_to_send1,
+                                tx_clone_to_send2,
+                                Arc::new(Some(&actual_faults)),
+                            )
                         });
                     }
                     for (idx, input_array) in input_matrix.data.iter().enumerate() {
-                        layers_channel_senders[0].send((idx , input_array.clone())).unwrap();
+                        layers_channel_senders[0]
+                            .send((idx, input_array.clone()))
+                            .unwrap();
                     }
                     // Actually just the first sender should be dropped..... CHECK THIS
                     drop(layers_channel_senders);
 
                     // Receiving the final result for the current input_array
-                    while let Ok(result) = layers_channel_receivers[n_layers].recv() {
+                    while let Ok(result) = layers_channel_receivers[th_len].recv() {
                         out.push(result.1.clone());
                     }
                 });
                 out
-            },
+            }
             None => {
                 //We create n+1 channel:
                 //input (layer 0)
                 //layer i
                 //...
                 //output (n+1 | output receiver)
-                thread::scope(|scope|{
-                    let n_layers = self.layers.len();
-                    for (layer_idx, l ) in self.layers.iter_mut().enumerate() {
-                        let rx_clone_to_send1 = layers_channel_receivers[layer_idx].clone();
-                        let tx_clone_to_send2 = layers_channel_senders[layer_idx + 1].clone();
+                let mut layer_distribution = self.layer_per_thread();
+                let th_len = layer_distribution.len();
+                thread::scope(|scope| {
+                    for (thread_idx, v_l) in layer_distribution.iter_mut().enumerate() {
+                        let rx_clone_to_send1 = layers_channel_receivers[thread_idx].clone();
+                        let tx_clone_to_send2 = layers_channel_senders[thread_idx + 1].clone();
+
                         scope.spawn(|| {
-                            Snn::forward_parallel(l, rx_clone_to_send1, tx_clone_to_send2, Arc::new(None));
+                            Snn::forward_parallel(
+                                v_l,
+                                rx_clone_to_send1,
+                                tx_clone_to_send2,
+                                Arc::new(None),
+                            )
                         });
                     }
                     for (idx, input_array) in input_matrix.data.iter().enumerate() {
-                        layers_channel_senders[0].send((idx,input_array.clone())).unwrap();
+                        layers_channel_senders[0]
+                            .send((idx, input_array.clone()))
+                            .unwrap();
                     }
                     // Actually just the first sender should be dropped..... CHECK THIS
                     drop(layers_channel_senders);
 
                     // Receiving the final result for the current input_array
-                    while let Ok(result) = layers_channel_receivers[n_layers].recv() {
+                    while let Ok(result) = layers_channel_receivers[th_len].recv() {
                         out.push(result.1.clone());
                     }
                 });
@@ -181,13 +257,30 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         }
     }
 
-    fn forward_parallel(l :&mut Layer<N>, rx: Receiver<(usize, Vec<u8>)>, tx: Sender<(usize, Vec<u8>)>, actual_fault: Arc<Option<&ActualFault<N::D>>>) {
-        let mut out = Vec::new();
+    fn forward_parallel(
+        l: &mut Vec<&mut Layer<N>>,
+        rx: Receiver<(usize, Vec<u8>)>,
+        tx: Sender<(usize, Vec<u8>)>,
+        actual_fault: Arc<Option<&ActualFault<N::D>>>,
+    ) {
+        //let mut out = Vec::new();
         let fault = *actual_fault;
         while let Ok(value) = rx.recv() {
+            let mut y = value.1;
             //Do neuron stuff here
-            out = l.forward(&value.1, fault, value.0);
-            tx.send((value.0, out)).unwrap();
+            for v in l.iter_mut() {
+                match fault {
+                    Some(a_f) => {
+                        if (*v).id == a_f.layer_id {
+                            y = (*v).forward(&y, Some(a_f), value.0);
+                        }
+                    }
+                    None => {
+                        y = (*v).forward(&y, None, value.0);
+                    }
+                }
+            }
+            tx.send((value.0, y)).unwrap();
         }
     }
 
@@ -203,8 +296,9 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             .collect::<Vec<(Vec<Vec<f64>>, Option<Vec<Vec<f64>>>)>>();
 
         for i in 0..fault_configuration.get_n_occurrences() {
-
-            let result = self.clone().forward(input_matrix, Some(fault_configuration));
+            let result = self
+                .clone()
+                .forward(input_matrix, Some(fault_configuration));
 
             // First version: nice output printing, Second version: debug speed of light
             //println!("and the result for the {} repetition is {:?}\n", i, result);
@@ -508,8 +602,7 @@ impl<N: Neuron + Clone> Layer<N> {
                                     if save.0 {
                                         self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize] = save.1
-                                    }
-                                    else {
+                                    } else {
                                         match self.states_weights {
                                             Some(ref mut v) => {
                                                 v[a_f.neuron_id.0 as usize]
@@ -518,8 +611,7 @@ impl<N: Neuron + Clone> Layer<N> {
                                             _ => {}
                                         }
                                     }
-                                }
-                                else {
+                                } else {
                                     self.weights[a_f.neuron_id.0 as usize] = saved_weights.0;
                                     match self.states_weights {
                                         Some(ref mut v) => {
