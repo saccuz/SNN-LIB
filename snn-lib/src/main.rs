@@ -4,11 +4,13 @@ use crate::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponen
 use crate::snn::lif::{LifNeuron, LifNeuronParameters, LifSpecificComponent, ResetMode};
 use crate::snn::matrix::{Input, Matrix};
 use crate::snn::snn::Snn;
+use std::time::{Instant, Duration};
 
 fn main() {
     // 1 - First way to set specific neuron parameters, different for each layer
     let mut arr = Vec::<LifNeuronParameters>::new();
-    for _ in 0..3 {
+
+    for _ in 0..14 {
         arr.push(LifNeuronParameters {
             v_rest: 0.0,
             v_th: 0.0,
@@ -17,7 +19,7 @@ fn main() {
         })
     }
 
-    let mut snn = Snn::<LifNeuron>::new(6, vec![10, 5, 3], vec![true, true, true], Some(arr));
+    let mut snn = Snn::<LifNeuron>::new(6, vec![200, 150, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 5, 3], vec![true, true, true, true, true,true, true, true, true, true, true, true, true, true], Some(arr));
 
     // 2 - Alternative way to set the same parameters for the whole network
     let parameters_for_lif = LifNeuronParameters {
@@ -56,22 +58,16 @@ fn main() {
         100,
     );
 
-    snn.emulate_fault(&input_matrix, &fault_configuration);
-    //println!("{:?}", snn.forward(&input_matrix, Option::None));
+    //snn.emulate_fault(&input_matrix, &fault_configuration);
     //println!("\nSo the final result is: {:?}", snn.forward(&input_matrix, None));
+
+    let mut times = Vec::new();
+    for i in 0..10{
+        let start = Instant::now();
+        snn.emulate_fault(&input_matrix, &fault_configuration);
+        times.push(start.elapsed());
+    }
+
+    println!("Mean time elapsed in expensive_function() is: {:?}", times.iter().sum::<Duration>()/100);
+
 }
-
-//println!("{}", input_matrix);
-
-//let input_matrix =vec![
-//    vec![0, 1, 0, 0, 0, 0],
-//    vec![1, 0, 1, 0, 1, 0],
-//    vec![0, 1, 1, 1, 1, 1],
-//    vec![1, 0, 0, 1, 0, 0],
-//    vec![0, 0, 1, 0, 1, 0],
-//    vec![0, 1, 1, 1, 1, 1],
-//    vec![1, 0, 0, 1, 0, 0],
-//    vec![0, 0, 1, 0, 1, 0],
-//    vec![0, 1, 1, 1, 1, 1],
-//    vec![1, 1, 0, 0, 1, 1]
-//];

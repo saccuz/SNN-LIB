@@ -97,58 +97,11 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                 }
             }
         }
-        println!("{:?}", l_per_t);
-        //3 2 2 - > 3, 5, 7
-        //vettore -> vec, vec, vec
-        //let mut s = Vec::new();
-        //for j in l_per_t{
-        //    let mut x = Vec::new();
-        //    for (idx, l) in self.layers.iter_mut().enumerate() {
-        //        if idx < j {
-        //            x.push(l);
-        //        }
-        //    }
-        //    s.push(x);
-        //}
+
         let mut s = Vec::new();
         for _ in 0..l_per_t.len() {
             s.push(Vec::new())
         }
-
-        //let mut idx = 0;
-        //while s[idx].len() < l_per_t[idx] {
-        //    for l in self.layers.iter_mut() {
-        //
-        //    }
-        //}
-
-        //for (idx, l) in self.layers.iter_mut().enumerate() {
-        //    for (jdx, lp) in l_per_t.iter().enumerate() {
-        //        if idx < *lp {
-        //            s[jdx].push(l);
-        //            break
-        //        }
-        //    }
-        //
-
-        //let idx = 0;
-        //let count = 0;
-        //for (idj, el) in s.iter_mut().enumerate() {
-        //    if count < l_per_t[idj]{
-        //        el.push(&mut self.layers[idx]);
-        //        count += 1;
-        //    }
-        //    else {
-        //        continue;
-        //    }
-        //    idx +=1;
-        //}
-
-        //s[0].push(&mut self.layers[0]);
-        //
-        //s[1].push(&mut self.layers[1]);
-        //
-        //s[2].push(&mut self.layers[2]);
 
         let mut pos = 0;
         for l in self.layers.iter_mut() {
@@ -160,7 +113,6 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             }
         }
 
-        // l_per_t;
         s
     }
 
@@ -172,8 +124,14 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         let mut layers_channel_senders = Vec::new();
         let mut layers_channel_receivers = Vec::new();
 
-        //for _ in 0..(self.layers.len()+1) {
-        for _ in 0..((self.layers.len() % num_cpus::get()) + 1) {
+        let n_channels = if self.layers.len() < num_cpus::get() {
+            self.layers.len() + 1
+        }
+        else {
+            num_cpus::get() + 1
+        };
+
+        for _ in 0..n_channels {
             let channel = unbounded::<(usize, Vec<u8>)>();
             layers_channel_senders.push(channel.0);
             layers_channel_receivers.push(channel.1);
@@ -264,8 +222,8 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         let fault = *actual_fault;
         while let Ok(value) = rx.recv() {
             let mut y = value.1;
-            //Do neuron stuff here
             for l in layers.iter_mut() {
+                //Do neuron stuff here
                 match fault {
                     Some(a_f) if (*l).id == a_f.layer_id => {
                             y = (*l).forward(&y, Some(a_f), value.0);
