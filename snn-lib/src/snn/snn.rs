@@ -179,8 +179,6 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             layers_channel_receivers.push(channel.1);
         }
 
-        println!("lunghezza senders {}", layers_channel_senders.len());
-
         let mut out = Vec::new();
         match fault_configuration {
             Some(fault_configuration) => {
@@ -258,25 +256,22 @@ impl<N: Neuron + Clone + Send> Snn<N> {
     }
 
     fn forward_parallel(
-        l: &mut Vec<&mut Layer<N>>,
+        layers: &mut Vec<&mut Layer<N>>,
         rx: Receiver<(usize, Vec<u8>)>,
         tx: Sender<(usize, Vec<u8>)>,
         actual_fault: Arc<Option<&ActualFault<N::D>>>,
     ) {
-        //let mut out = Vec::new();
         let fault = *actual_fault;
         while let Ok(value) = rx.recv() {
             let mut y = value.1;
             //Do neuron stuff here
-            for v in l.iter_mut() {
+            for l in layers.iter_mut() {
                 match fault {
-                    Some(a_f) => {
-                        if (*v).id == a_f.layer_id {
-                            y = (*v).forward(&y, Some(a_f), value.0);
-                        }
+                    Some(a_f) if (*l).id == a_f.layer_id => {
+                            y = (*l).forward(&y, Some(a_f), value.0);
                     }
-                    None => {
-                        y = (*v).forward(&y, None, value.0);
+                    _ => {
+                        y = (*l).forward(&y, None, value.0);
                     }
                 }
             }

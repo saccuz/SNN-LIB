@@ -56,8 +56,8 @@ fn main() {
         100,
     );
 
-    //snn.emulate_fault(&input_matrix, &fault_configuration);
-    println!("{:?}", snn.forward(&input_matrix, Option::None));
+    snn.emulate_fault(&input_matrix, &fault_configuration);
+    //println!("{:?}", snn.forward(&input_matrix, Option::None));
     //println!("\nSo the final result is: {:?}", snn.forward(&input_matrix, None));
 }
 
