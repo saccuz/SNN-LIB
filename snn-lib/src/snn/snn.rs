@@ -1,3 +1,4 @@
+use std::cmp::min;
 use crate::snn::faults::{
     bit_flip, fault_iter, stuck_at_one, stuck_at_zero, ActualFault, Component, FaultConfiguration,
     FaultType, OuterComponent,
@@ -124,12 +125,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         let mut layers_channel_senders = Vec::new();
         let mut layers_channel_receivers = Vec::new();
 
-        let n_channels = if self.layers.len() < num_cpus::get() {
-            self.layers.len() + 1
-        }
-        else {
-            num_cpus::get() + 1
-        };
+        let n_channels = min(self.layers.len() + 1, num_cpus::get() + 1);
 
         for _ in 0..n_channels {
             let channel = unbounded::<(usize, Vec<u8>)>();
