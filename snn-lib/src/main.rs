@@ -58,10 +58,10 @@ fn main() {
         100,
     );
 
-    //snn.emulate_fault(&input_matrix, &fault_configuration);
+    snn.emulate_fault(&input_matrix, &fault_configuration);
     //println!("\nSo the final result is: {:?}", snn.forward(&input_matrix, None));
 
-
+    /*
     let mut times = Vec::new();
     let num_rep_for_statistics = 10;
     for _ in 0..num_rep_for_statistics {
@@ -71,6 +71,6 @@ fn main() {
     }
 
     println!("Mean time elapsed in expensive_function() is: {:?}", times.iter().sum::<Duration>()/num_rep_for_statistics);
-
+    */
 }
 

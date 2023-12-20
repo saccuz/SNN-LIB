@@ -4,7 +4,7 @@ use rand::{thread_rng, Rng};
 use std::fmt::Debug;
 
 // Which of the three basic types of fault is going to happen
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FaultType {
     StuckAtZero,
     StuckAtOne,
@@ -33,6 +33,27 @@ pub struct ActualFault<D: SpecificComponent> {
     pub time_tbf: Option<usize>,
     pub bus: Option<usize>,
     pub offset: u8,
+}
+
+impl<D: SpecificComponent + Clone + Debug> std::fmt::Display for ActualFault<D> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut component = String::new();
+        match self.component.clone() {
+            Component::Inside(c) => component.push_str(&format!("Inside({:?})", c)),
+            Component::Outside(c) => component.push_str(&format!("Outside({:?})", c)),
+        }
+        write!(
+            f,
+            "Starting experiment with Fault: {{ \n\tcomponent: {},\n\t layer_id: {},\n\t neuron_id: {:?},\n\t fault_type: {:?},\n\t time_tbf: {:?},\n\t bus: {:?},\n\t offset: {}\n\t }}",
+            component,
+            self.layer_id,
+            self.neuron_id,
+            self.fault_type,
+            self.time_tbf,
+            self.bus,
+            self.offset
+        )
+    }
 }
 
 pub struct FaultConfiguration<D: SpecificComponent + Clone + Debug> {
@@ -131,6 +152,35 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         }
     }
 }
+
+impl<D: SpecificComponent + Clone + Debug> std::fmt::Display for FaultConfiguration<D> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut component = String::new();
+        component.push_str("[");
+        for c in self.components.clone() {
+            match c {
+                Component::Inside(c) => component.push_str(&format!("Inside({:?})", c)),
+                Component::Outside(c) => component.push_str(&format!("Outside({:?})", c)),
+            }
+            component.push_str(", ");
+        }
+        component.push_str("]");
+        write!(
+            f,
+            "{:#<100}\n\n Starting simulation with FaultConfiguration: {{ \n\tcomponents: {},\n\t n_bus: {},\n\t fault_type: {:?},\n\t n_occurrences: {}\n\t }}\n\n{:#<100} \n\n\n ",
+            "",
+            component,
+            self.n_bus,
+            self.fault_type,
+            self.n_occurrences,
+            ""
+        )
+
+
+    }
+}
+
+
 
 pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
     //And - Tutti a 1 e il bit a 0 es: 111111111011111

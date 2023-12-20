@@ -1,0 +1,1013 @@
+####################################################################################################
+
+ Starting simulation with FaultConfiguration: { 
+	components: [Inside(Membrane), Outside(Connections), Outside(Weights), ],
+	 n_bus: 8,
+	 fault_type: StuckAtZero,
+	 n_occurrences: 100
+	 }
+
+#################################################################################################### 
+
+
+ 
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 2,
+	 neuron_id: (12, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(1),
+	 offset: 35
+	 }
+Result for rep 00: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 5,
+	 neuron_id: (3, Some(8)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 55
+	 }
+Result for rep 01: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 2,
+	 neuron_id: (13, Some(3)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 9
+	 }
+Result for rep 02: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 43
+	 }
+Result for rep 03: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 3,
+	 neuron_id: (15, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 23
+	 }
+Result for rep 04: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 2,
+	 neuron_id: (2, Some(12)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 61
+	 }
+Result for rep 05: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 25
+	 }
+Result for rep 06: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 2,
+	 neuron_id: (6, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(3),
+	 offset: 16
+	 }
+Result for rep 07: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 4,
+	 neuron_id: (9, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 48
+	 }
+Result for rep 08: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 1,
+	 neuron_id: (36, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(5),
+	 offset: 36
+	 }
+Result for rep 09: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 6,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(0),
+	 offset: 23
+	 }
+Result for rep 10: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 23
+	 }
+Result for rep 11: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 5,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 0
+	 }
+Result for rep 12: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 4,
+	 neuron_id: (3, Some(6)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 5
+	 }
+Result for rep 13: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 3,
+	 neuron_id: (5, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 43
+	 }
+Result for rep 14: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 5,
+	 neuron_id: (4, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 40
+	 }
+Result for rep 15: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 4,
+	 neuron_id: (5, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 30
+	 }
+Result for rep 16: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 3,
+	 neuron_id: (12, Some(19)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 29
+	 }
+Result for rep 17: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 1,
+	 neuron_id: (36, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(2),
+	 offset: 45
+	 }
+Result for rep 18: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 2,
+	 neuron_id: (22, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 4
+	 }
+Result for rep 19: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 2,
+	 neuron_id: (14, Some(31)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 9
+	 }
+Result for rep 20: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 3,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 58
+	 }
+Result for rep 21: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 4,
+	 neuron_id: (6, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 7
+	 }
+Result for rep 22: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 4,
+	 neuron_id: (4, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(4),
+	 offset: 47
+	 }
+Result for rep 23: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 10
+	 }
+Result for rep 24: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 6,
+	 neuron_id: (1, Some(2)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 33
+	 }
+Result for rep 25: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 3,
+	 neuron_id: (18, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 50
+	 }
+Result for rep 26: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 2,
+	 neuron_id: (20, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(2),
+	 offset: 13
+	 }
+Result for rep 27: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 0,
+	 neuron_id: (27, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 14
+	 }
+Result for rep 28: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 5,
+	 neuron_id: (1, Some(6)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 57
+	 }
+Result for rep 29: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 1,
+	 neuron_id: (35, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 26
+	 }
+Result for rep 30: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 49
+	 }
+Result for rep 31: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 2,
+	 neuron_id: (16, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 36
+	 }
+Result for rep 32: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 2,
+	 neuron_id: (10, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 55
+	 }
+Result for rep 33: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 0,
+	 neuron_id: (17, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 16
+	 }
+Result for rep 34: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 5,
+	 neuron_id: (4, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(2),
+	 offset: 61
+	 }
+Result for rep 35: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 3,
+	 neuron_id: (3, Some(5)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 46
+	 }
+Result for rep 36: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 6,
+	 neuron_id: (0, Some(2)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 36
+	 }
+Result for rep 37: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 2,
+	 neuron_id: (17, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(1),
+	 offset: 61
+	 }
+Result for rep 38: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 1,
+	 neuron_id: (5, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(7),
+	 offset: 58
+	 }
+Result for rep 39: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 27
+	 }
+Result for rep 40: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 2,
+	 neuron_id: (8, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 63
+	 }
+Result for rep 41: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 1,
+	 neuron_id: (2, Some(39)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 3
+	 }
+Result for rep 42: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 2,
+	 neuron_id: (5, Some(32)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 11
+	 }
+Result for rep 43: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 4,
+	 neuron_id: (6, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(0),
+	 offset: 60
+	 }
+Result for rep 44: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 3,
+	 neuron_id: (13, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 23
+	 }
+Result for rep 45: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 3,
+	 neuron_id: (3, Some(14)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 7
+	 }
+Result for rep 46: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 1,
+	 neuron_id: (22, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 21
+	 }
+Result for rep 47: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 1,
+	 neuron_id: (34, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(0),
+	 offset: 53
+	 }
+Result for rep 48: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 2,
+	 neuron_id: (11, Some(3)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 58
+	 }
+Result for rep 49: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 3,
+	 neuron_id: (6, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 7
+	 }
+Result for rep 50: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 4,
+	 neuron_id: (3, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(0),
+	 offset: 7
+	 }
+Result for rep 51: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 6,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(6),
+	 offset: 12
+	 }
+Result for rep 52: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 6,
+	 neuron_id: (1, Some(4)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 61
+	 }
+Result for rep 53: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 1,
+	 neuron_id: (3, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(7),
+	 offset: 53
+	 }
+Result for rep 54: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 4,
+	 neuron_id: (7, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 39
+	 }
+Result for rep 55: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (2, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 0
+	 }
+Result for rep 56: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 1,
+	 neuron_id: (21, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 9
+	 }
+Result for rep 57: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 3,
+	 neuron_id: (9, Some(2)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 49
+	 }
+Result for rep 58: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 1,
+	 neuron_id: (2, Some(2)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 45
+	 }
+Result for rep 59: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 3,
+	 neuron_id: (16, Some(11)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 23
+	 }
+Result for rep 60: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 4,
+	 neuron_id: (8, Some(19)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 63
+	 }
+Result for rep 61: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 3,
+	 neuron_id: (7, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(1),
+	 offset: 58
+	 }
+Result for rep 62: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 4,
+	 neuron_id: (4, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(7),
+	 offset: 53
+	 }
+Result for rep 63: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 4,
+	 neuron_id: (9, Some(4)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 15
+	 }
+Result for rep 64: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 3,
+	 neuron_id: (13, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(1),
+	 offset: 42
+	 }
+Result for rep 65: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 5,
+	 neuron_id: (2, Some(7)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 59
+	 }
+Result for rep 66: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 1,
+	 neuron_id: (3, Some(13)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 60
+	 }
+Result for rep 67: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 1,
+	 neuron_id: (29, Some(39)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 2
+	 }
+Result for rep 68: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 5,
+	 neuron_id: (0, Some(1)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 21
+	 }
+Result for rep 69: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 4,
+	 neuron_id: (0, Some(18)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 60
+	 }
+Result for rep 70: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 5,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 36
+	 }
+Result for rep 71: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 38
+	 }
+Result for rep 72: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 4,
+	 neuron_id: (6, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 40
+	 }
+Result for rep 73: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 5,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 7
+	 }
+Result for rep 74: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 0,
+	 neuron_id: (3, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 21
+	 }
+Result for rep 75: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 6,
+	 neuron_id: (1, Some(3)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 20
+	 }
+Result for rep 76: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 6,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 33
+	 }
+Result for rep 77: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 1,
+	 neuron_id: (13, Some(14)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 16
+	 }
+Result for rep 78: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 4,
+	 neuron_id: (3, Some(1)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 56
+	 }
+Result for rep 79: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 5,
+	 neuron_id: (3, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(1),
+	 offset: 37
+	 }
+Result for rep 80: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 5,
+	 neuron_id: (3, Some(6)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 37
+	 }
+Result for rep 81: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 3,
+	 neuron_id: (15, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 57
+	 }
+Result for rep 82: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 6,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(2),
+	 offset: 36
+	 }
+Result for rep 83: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 3,
+	 neuron_id: (11, Some(24)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 45
+	 }
+Result for rep 84: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 3,
+	 neuron_id: (10, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(0),
+	 offset: 62
+	 }
+Result for rep 85: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 6,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(4),
+	 offset: 47
+	 }
+Result for rep 86: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 6,
+	 neuron_id: (0, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(5),
+	 offset: 22
+	 }
+Result for rep 87: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 4,
+	 neuron_id: (5, Some(0)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 46
+	 }
+Result for rep 88: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 1,
+	 neuron_id: (20, Some(21)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 27
+	 }
+Result for rep 89: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 4,
+	 neuron_id: (3, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 35
+	 }
+Result for rep 90: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 5,
+	 neuron_id: (2, Some(2)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 7
+	 }
+Result for rep 91: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 3,
+	 neuron_id: (1, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(2),
+	 offset: 33
+	 }
+Result for rep 92: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 2,
+	 neuron_id: (0, Some(25)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 9
+	 }
+Result for rep 93: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 5,
+	 neuron_id: (2, Some(9)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 4
+	 }
+Result for rep 94: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 1,
+	 neuron_id: (21, Some(27)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 49
+	 }
+Result for rep 95: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Connections),
+	 layer_id: 5,
+	 neuron_id: (3, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: Some(7),
+	 offset: 53
+	 }
+Result for rep 96: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Outside(Weights),
+	 layer_id: 2,
+	 neuron_id: (11, Some(5)),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 56
+	 }
+Result for rep 97: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 5,
+	 neuron_id: (3, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 50
+	 }
+Result for rep 98: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]
+Starting experiment with Fault: { 
+	component: Inside(Membrane),
+	 layer_id: 5,
+	 neuron_id: (4, None),
+	 fault_type: StuckAtZero,
+	 time_tbf: None,
+	 bus: None,
+	 offset: 8
+	 }
+Result for rep 99: [[1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0], [1, 1, 1], [0, 0, 0]]

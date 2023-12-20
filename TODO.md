@@ -1,5 +1,5 @@
 # cose da fare
-- pacchettizzare i layer per ogni thread (vd. chat discord)
+- ~~pacchettizzare i layer per ogni thread (vd. chat discord)~~
 - refactoring 
 - rendere operazioni aritmetiche generiche in fault.rs
 

@@ -10,6 +10,28 @@ use rand::Rng;
 use std::fmt::{Display, Formatter, Result};
 use std::sync::Arc;
 use std::thread;
+use std::fs::OpenOptions;
+use std::io::{Read, Write, Seek, SeekFrom};
+use gag::{BufferRedirect, Redirect};
+use std::env::current_dir;
+use chrono::{Datelike, DateTime, Timelike, Utc};
+use dirs::data_local_dir;
+
+//create the get_temp_filepath function using data_local_dir
+fn get_temp_filepath() -> String {
+    #[cfg(windows)]
+    //take the path of the working directory and add the name of the log file
+    let date = Utc::now();
+    return format!("{}\\Logs\\{}-{:02}-{:02}-{:02}.{:02}.{:02}.log",
+                   current_dir().unwrap().display(),
+                   date.year_ce().1,
+                   date.month(),
+                   date.year(),
+                   date.hour(),
+                   date.minute(),
+                   date.second()
+    );
+}
 
 #[derive(Clone, Copy)]
 pub enum NeuronType {
@@ -138,6 +160,10 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             Some(fault_configuration) => {
                 let actual_faults = fault_configuration
                     .get_actual_faults(self.get_layer_n_neurons(), input_matrix.rows);
+
+                //This print has to be made conditional for debugging purposes
+                println!("{}", actual_faults);
+
                 let mut layer_distribution = self.layer_per_thread();
                 let th_len = layer_distribution.len();
                 thread::scope(|scope| {
@@ -244,6 +270,20 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             .map(|x| (x.weights.clone(), x.states_weights.clone()))
             .collect::<Vec<(Vec<Vec<f64>>, Option<Vec<Vec<f64>>>)>>();
 
+        println!("{}", get_temp_filepath());
+
+        let log = OpenOptions::new()
+            .truncate(true)
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(get_temp_filepath())
+            .unwrap();
+
+
+        let print_redirect = Redirect::stdout(log).unwrap();
+
+        println!("{}", fault_configuration);
         for i in 0..fault_configuration.get_n_occurrences() {
             let result = self
                 .clone()
