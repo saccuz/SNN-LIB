@@ -263,9 +263,20 @@ impl Neuron for LifNeuron {
                 }
             }
         }
+
         // Corrupting v_mem memory when the value is written back to memory
         self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
-
+        // Reapplying bitflip to v_th and v_rest, only if the fault was a bit flip
+        match actual_fault {
+            Some(a_f) => match &a_f.fault_type {
+                FaultType::TransientBitFlip => {
+                    self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
+                    self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
+                }
+                _ => ()
+            }
+            None => ()
+        }
         spike
     }
 }

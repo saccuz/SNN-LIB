@@ -2,6 +2,10 @@
 - ~~pacchettizzare i layer per ogni thread (vd. chat discord)~~
 - refactoring 
 - rendere operazioni aritmetiche generiche in fault.rs
+- fare i controlli che se nella snn non ci sono innerweights (innerconnections) non puoi selezionare inner weights fault 
+(in realtà modificare la get_actual_fault perchè deve scegliere casualmente solo fra i layer che hanno true come inner connections)
+- fare test abbondanti per controllare che tutto funzioni effettivamente bene
+
 
 
 # cose carine
