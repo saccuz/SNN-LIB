@@ -1,4 +1,4 @@
-use crate::snn::faults::{apply_fault, ActualFault, Component};
+use crate::snn::faults::{apply_fault, ActualFault, Component, FaultType};
 use crate::snn::neuron::NeuronParameters;
 use crate::snn::neuron::{Neuron, SpecificComponent};
 
@@ -149,6 +149,7 @@ impl Neuron for LifNeuron {
                 r_type: ResetMode::Zero,
                 t_s_last: 0,
                 tau: p.tau,
+                broken: false
             },
             None => LifNeuron {
                 id,
@@ -210,8 +211,8 @@ impl Neuron for LifNeuron {
             },
             None => {}
         }
-        // Salviamo i valori effettivi v_mem, v_th, v_rest
-        self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
+
+        // Apply faults to v_mem, this is done every iteration because v_mem changes everytime we compute the lif formula.
         self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
 
         //This broken variable check is done to avoid doing function calls every iteration for Stuck at-X faults.
@@ -239,9 +240,9 @@ impl Neuron for LifNeuron {
             LifNeuron::div(-((self.t_s_last) as f64), self.tau, actual_fault, ops[6]);
 
         // rest + (mem - rest) * exp(dt/tau) + sum(w*x -wi*xi)
-        // Questa operazione:
+        // Operation:
         // self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
-        // è stata divisa in più parti ed ogni operazione è stata simulata con l'eventuale fault
+        // Splitted in sub part, to possibly inject fault in each operation
         self.v_mem = LifNeuron::add(
             LifNeuron::add(
                 LifNeuron::mul(

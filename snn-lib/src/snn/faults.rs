@@ -102,6 +102,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                 let neuron_id_2 = match c {
                     OuterComponent::Weights => rng.gen_range(0..layers_info[layer_id - 1]) as i32,
                     OuterComponent::InnerWeights => {
+                        // TODO: fare check se il layer ha gli inner_weights -> in teoria layer info contiene una tupla con un booleano per segnalarlo
                         let mut neuron_2 = rng.gen_range(0..layers_info[layer_id]);
                         if neuron_id_1 == neuron_2 {
                             if neuron_2 == layers_info[layer_id] - 1 {

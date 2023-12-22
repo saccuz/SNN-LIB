@@ -10,7 +10,7 @@ fn main() {
     // 1 - First way to set specific neuron parameters, different for each layer
     let mut arr = Vec::<LifNeuronParameters>::new();
 
-    for _ in 0..7 {
+    for _ in 0..17 {
         arr.push(LifNeuronParameters {
             v_rest: 0.0,
             v_th: 0.0,

@@ -13,8 +13,7 @@ use std::thread;
 use std::fs::OpenOptions;
 use gag::{Redirect};
 use std::env::current_dir;
-use chrono::{Datelike, DateTime, Timelike, Utc};
-use dirs::data_local_dir;
+use chrono::{Datelike, Timelike, Local};
 
 // Setting the format for the log file
 fn get_temp_filepath() -> String {
@@ -249,11 +248,13 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         }
     }
 
+    // Run Snn start to end multiple time to fault emulation
     pub fn emulate_fault(
         &mut self,
         input_matrix: &Input,
         fault_configuration: &FaultConfiguration<N::D>,
     ) -> () {
+        // save components that have to be reset every run
         let saved_w = self
             .layers
             .iter()
@@ -455,6 +456,7 @@ impl<N: Neuron + Clone> Layer<N> {
                                         );
                                     }
                                 }
+                                _ => { /* in if time != 0 we don't need to apply Stuck At-X because it was already applied */ }
                             },
                             OuterComponent::Connections => {
                                 //##### We suppose that both weights and internal weights are passed through the same buses ######//
