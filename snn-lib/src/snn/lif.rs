@@ -43,6 +43,7 @@ pub struct LifNeuron {
     r_type: ResetMode,
     t_s_last: u64, //t_s_last nel nostro caso funge come variazione di tempo dall'ultima spike. Quindi è uguale a t-t_last
     tau: f64,
+    broken: bool
 }
 
 impl LifNeuron {
@@ -157,6 +158,7 @@ impl Neuron for LifNeuron {
                 r_type: ResetMode::Zero,
                 t_s_last: 0,
                 tau: 0.0,
+                broken: false
             },
         }
     }
@@ -211,7 +213,13 @@ impl Neuron for LifNeuron {
         // Salviamo i valori effettivi v_mem, v_th, v_rest
         self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
         self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
-        self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
+
+        //This broken variable check is done to avoid doing function calls every iteration for Stuck at-X faults.
+        if !self.broken {
+            self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
+            self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
+            self.broken = true;
+        }
 
         // Input impulses summation
         let n_neuron = self.id as usize;

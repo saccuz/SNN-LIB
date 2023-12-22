@@ -260,7 +260,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             .map(|x| (x.weights.clone(), x.states_weights.clone()))
             .collect::<Vec<(Vec<Vec<f64>>, Option<Vec<Vec<f64>>>)>>();
 
-        println!("{}", get_temp_filepath());
+        println!("Output logs can be found in: {}", get_temp_filepath());
 
         let log = OpenOptions::new()
             .truncate(true)
@@ -373,6 +373,15 @@ impl<N: Neuron + Clone> Layer<N> {
         }
     }
 
+    fn set_parameters(&mut self, parameters: &N::T) {
+        for n in self.neurons.iter_mut() {
+            n.set_parameters(parameters);
+        }
+    }
+
+    //set_parameters??
+    //Should we add other utility function for debugging?
+
     fn forward(
         &mut self,
         inputs: &Vec<u8>,
@@ -424,7 +433,7 @@ impl<N: Neuron + Clone> Layer<N> {
                                         a_f.offset,
                                     );
                                 }
-                                FaultType::StuckAtOne => {
+                                FaultType::StuckAtOne if time == 0 => {
                                     stuck_at_one(
                                         &mut self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize],
@@ -450,7 +459,7 @@ impl<N: Neuron + Clone> Layer<N> {
                             OuterComponent::Connections => {
                                 //##### We suppose that both weights and internal weights are passed through the same buses ######//
                                 match a_f.fault_type {
-                                    FaultType::StuckAtZero => {
+                                    FaultType::StuckAtZero if time == 0 => {
                                         fault_iter(
                                             &mut self.weights[a_f.neuron_id.0 as usize],
                                             a_f,
@@ -467,7 +476,7 @@ impl<N: Neuron + Clone> Layer<N> {
                                             _ => {}
                                         }
                                     }
-                                    FaultType::StuckAtOne => {
+                                    FaultType::StuckAtOne if time == 0 => {
                                         fault_iter(
                                             &mut self.weights[a_f.neuron_id.0 as usize],
                                             a_f,
@@ -507,18 +516,19 @@ impl<N: Neuron + Clone> Layer<N> {
                                             }
                                         }
                                     }
+                                    _ => { /* in if time != 0 we don't need to apply Stuck At-X because it was already applied */ }
                                 }
                             }
                             OuterComponent::InnerWeights => match self.states_weights {
                                 Some(ref mut sw) => match a_f.fault_type {
-                                    FaultType::StuckAtZero => {
+                                    FaultType::StuckAtZero if time == 0 => {
                                         stuck_at_zero(
                                             &mut sw[a_f.neuron_id.0 as usize]
                                                 [a_f.neuron_id.1.unwrap() as usize],
                                             a_f.offset,
                                         );
                                     }
-                                    FaultType::StuckAtOne => {
+                                    FaultType::StuckAtOne if time == 0 => {
                                         stuck_at_one(
                                             &mut sw[a_f.neuron_id.0 as usize]
                                                 [a_f.neuron_id.1.unwrap() as usize],
@@ -540,6 +550,7 @@ impl<N: Neuron + Clone> Layer<N> {
                                             );
                                         }
                                     }
+                                    _ => { /* in if time != 0 we don't need to apply Stuck At-X because it was already applied */ }
                                 },
                                 None => {}
                             },
@@ -588,11 +599,5 @@ impl<N: Neuron + Clone> Layer<N> {
         self.states = spikes.clone();
 
         spikes
-    }
-
-    fn set_parameters(&mut self, parameters: &N::T) {
-        for n in self.neurons.iter_mut() {
-            n.set_parameters(parameters);
-        }
     }
 }
