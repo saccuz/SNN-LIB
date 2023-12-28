@@ -56,13 +56,13 @@ impl LifNeuron {
         let mut scalar = 0.0;
 
         for (idx, x) in inputs.iter().enumerate() {
-            //somma per ogni neurone
-            scalar = LifNeuron::add(
+            // summation for each neuron
+            scalar = add(
                 scalar,
                 mul(*x as f64, weights[idx], actual_fault, ops[1]),
                 actual_fault,
                 ops[0],
-            ); // moltiplica la spike per il peso dell'input
+            ); // multiply spike for input's weights
         }
 
         scalar
@@ -78,19 +78,19 @@ impl LifNeuron {
     ) -> f64 {
         //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
 
-        //prodotto scalare tra input e pesi degli input
+        // scalar product between input and input's weights
         let out = LifNeuron::scalar_product(inputs, weights, actual_fault, ops);
 
         match states_weights {
-            //se è presente il vettore dei pesi degli stati
+            // if there is state weights array
             Some(states_weights) => {
                 let sum1 = LifNeuron::scalar_product(states, states_weights, actual_fault, ops);
                 add(out, sum1, actual_fault, ops[0])
             }
-            //se non è presente il vettore dei pesi degli stati
+            // if there is no state weights array
             None => out,
         }
-        //Out è la combinazione lineare tra il vettore degli input e il vettore dei pesi associati
+        // Out it's the linear combination between input array and array of associated weights
     }
 
 }

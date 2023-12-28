@@ -55,7 +55,12 @@ fn main() {
         r_type: ResetMode::Zero,
         tau: 0.35,
     };
-    snn.set_parameters(&parameters_for_lif);
+
+    // If None: parameters_for_lif are applied to all layers,
+    // If Some([idx1, idx2, ...]): parameters_for_lif are applied to index specified layers
+    snn.set_neuron_parameters(&parameters_for_lif, None);
+    //snn.set_neuron_parameters(&parameters_for_lif, Some(vec![0]));
+    //snn.set_neuron_parameters(&parameters_for_lif, Some(vec![0,2]));
 
     let input_matrix = Input::random(17, 6, false);
     //let input_matrix = <Input as Matrix>::from(vec![

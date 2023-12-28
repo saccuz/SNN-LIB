@@ -9,7 +9,7 @@
 - Aggiungere funzioni utili al logging e controlli su certe funzioni critiche [in parte fatta]
 - refactoring and commenting
 - fare test abbondanti per controllare che tutto funzioni effettivamente bene
-
+- riprendere matrix [fra avevi fatto qualcosa sull'altro branch?]
 
 # Logging
 - ~~Implement logging~~

@@ -178,10 +178,19 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         Snn { layers: layers_vec }
     }
 
-    // To furtherly set the inner parameters of layers' neurons.
-    pub fn set_parameters(&mut self, parameters: &N::T) {
-        for l in self.layers.iter_mut() {
-            l.set_parameters(parameters);
+    // To further set the inner parameters of layers' neurons.
+    pub fn set_neuron_parameters(&mut self, parameters: &N::T, indexes: Option<Vec<usize>>) {
+        match indexes {
+            None => {
+                for l in self.layers.iter_mut() {
+                    l.set_neuron_parameters(parameters);
+                }
+            }
+            Some(v) => {
+                for idx in v {
+                    self.layers[idx].set_neuron_parameters(parameters);
+                }
+            }
         }
     }
 
@@ -246,7 +255,6 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                 s[pos].push(l);
             }
         }
-
         s
     }
 
@@ -310,7 +318,6 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                     .send((idx, input_array.clone()))
                     .unwrap();
             }
-            // Actually just the first sender should be dropped..... TODO: CHECK THIS
             drop(layers_channel_senders);
 
             // Receiving the final results
@@ -436,7 +443,7 @@ impl<N: Neuron> Display for Snn<N> {
                 "| {:<16} | {:<16} | {:<16} | {:<16} |\n",
                 layer.id,
                 layer.neurons.len(),
-                (layer.weights.len() * layer.weights[0].len()),
+                layer.weights.len() * layer.weights[0].len(),
                 match &layer.states_weights {
                     Some(a) => a.len() * a.len() - a.len(),
                     None => 0,
@@ -549,7 +556,7 @@ impl<N: Neuron + Clone> Layer<N> {
                 match a_f.component {
                     Component::Inside(_) => {
                         let fault = match a_f.fault_type {
-                            FaultType::TransientBitFlip if (a_f.time_tbf.unwrap() != time) => None,
+                            FaultType::TransientBitFlip if a_f.time_tbf.unwrap() != time => None,
                             _ => actual_faults,
                         };
                         for n in self.neurons.iter_mut() {
@@ -709,7 +716,7 @@ impl<N: Neuron + Clone> Layer<N> {
                             ));
                         }
                         match a_f.fault_type {
-                            FaultType::TransientBitFlip if (a_f.time_tbf.unwrap() == time) => {
+                            FaultType::TransientBitFlip if a_f.time_tbf.unwrap() == time => {
                                 if a_f.bus.is_none() {
                                     if save.0 {
                                         self.weights[a_f.neuron_id.0 as usize]

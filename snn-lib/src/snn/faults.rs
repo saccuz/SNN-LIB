@@ -113,18 +113,30 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         let (layer_id, neuron_id) = match component.clone() {
             Component::Inside(_) => {
                 let layer_id = rng.gen_range(0..layers_info.len());
-                let neuron_id = rng.gen_range(0..layers_info[layer_id]);
+                let neuron_id = rng.gen_range(0..layers_info[layer_id].0);
                 (layer_id as u32, (neuron_id as u32, None))
             }
             Component::Outside(c) => {
-                let layer_id = rng.gen_range(1..layers_info.len());
-                let neuron_id_1 = rng.gen_range(0..layers_info[layer_id]);
+                let layer_id = match c {
+                    OuterComponent::InnerWeights => {
+                        // Select every layer that has InnerWeights and randomly return one of those
+                        // Info: we safely unwrap this because it cannot panic (we make it panic in snn.rs -> emulate_fault if there are no inner weights).
+                        *layers_info.iter().enumerate() //now we have (x = (idx, (n_neurons, bool to track the inner weights' presence))
+                            .filter(|x| x.1.1) // check if the inner weights' flag is true
+                            .map(|x| x.0) // take only the index
+                            .collect::<Vec<usize>>().choose(&mut rng).unwrap() // random selection
+                    },
+                    _ => {
+                        rng.gen_range(1..layers_info.len())
+                    }
+                };
+                let neuron_id_1 = rng.gen_range(0..layers_info[layer_id].0);
                 let neuron_id_2 = match c {
                     OuterComponent::Weights => rng.gen_range(0..layers_info[layer_id - 1].0) as i32,
                     OuterComponent::InnerWeights => {
                         let mut neuron_2 = rng.gen_range(0..layers_info[layer_id].0);
                         if neuron_id_1 == neuron_2 {
-                            if neuron_2 == layers_info[layer_id] - 1 {
+                            if neuron_2 == layers_info[layer_id].0 - 1 {
                                 neuron_2 -= 1;
                             } else {
                                 neuron_2 += 1;
@@ -149,7 +161,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
             }
         };
 
-        //###### BUS NUMBER GENERATOR FOR CONNECTIONS FAULTS######//
+        //###### BUS NUMBER GENERATOR FOR CONNECTIONS FAULTS ######//
         let bus = match component.clone() {
             Component::Outside(c) => match c {
                 OuterComponent::Connections => Some(rng.gen_range(0..self.n_bus)),
