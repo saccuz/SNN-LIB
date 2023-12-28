@@ -59,7 +59,7 @@ impl LifNeuron {
             //somma per ogni neurone
             scalar = LifNeuron::add(
                 scalar,
-                LifNeuron::mul(*x as f64, weights[idx], actual_fault, ops[1]),
+                mul(*x as f64, weights[idx], actual_fault, ops[1]),
                 actual_fault,
                 ops[0],
             ); // moltiplica la spike per il peso dell'input
@@ -237,16 +237,16 @@ impl Neuron for LifNeuron {
         };
 
         let exponent: f64 =
-            LifNeuron::div(-((self.t_s_last) as f64), self.tau, actual_fault, ops[6]);
+            div(-(self.t_s_last as f64), self.tau, actual_fault, ops[6]);
 
         // rest + (mem - rest) * exp(dt/tau) + sum(w*x -wi*xi)
         // Operation:
         // self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
         // Splitted in sub part, to possibly inject fault in each operation
-        self.v_mem = LifNeuron::add(
-            LifNeuron::add(
-                LifNeuron::mul(
-                    LifNeuron::add(self.v_mem, -self.v_rest, actual_fault, ops[0]),
+        self.v_mem = add(
+            add(
+                mul(
+                    add(self.v_mem, -self.v_rest, actual_fault, ops[0]),
                     exponent.exp(),
                     actual_fault,
                     ops[1],

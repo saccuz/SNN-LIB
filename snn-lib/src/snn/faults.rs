@@ -2,6 +2,7 @@ use crate::snn::neuron::SpecificComponent;
 use rand::seq::SliceRandom;
 use rand::{thread_rng, Rng};
 use std::fmt::Debug;
+use crate::snn::lif::LifSpecificComponent;
 
 // Which of the three basic types of fault is going to happen
 #[derive(Clone, Debug)]
@@ -78,11 +79,30 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         }
     }
 
+    // Check if between faultable components there is "inner_weights"
+    pub fn components_contain_inner_weights(&self) -> bool {
+        let mut ret = false;
+        for c in self.components.iter() {
+            match c {
+                Component::Outside(o) => match o {
+                    OuterComponent::InnerWeights => {
+                        ret = true;
+                        break;
+                    },
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
+        ret
+    }
+
+    // Get number of occurrences the whole fault emulation should be repeated
     pub fn get_n_occurrences(&self) -> u32 {
         self.n_occurrences
     }
 
-    pub fn get_actual_faults(&self, layers_info: Vec<usize>, total_time: usize) -> ActualFault<D> {
+    pub fn get_actual_faults(&self, layers_info: Vec<(usize, bool)>, total_time: usize) -> ActualFault<D> {
         let mut rng = thread_rng();
         let component = (*self.components.choose(&mut rng).unwrap()).clone();
         let time_tbf = match self.fault_type {
@@ -102,8 +122,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                 let neuron_id_2 = match c {
                     OuterComponent::Weights => rng.gen_range(0..layers_info[layer_id - 1]) as i32,
                     OuterComponent::InnerWeights => {
-                        // TODO: fare check se il layer ha gli inner_weights -> in teoria layer info contiene una tupla con un booleano per segnalarlo
-                        let mut neuron_2 = rng.gen_range(0..layers_info[layer_id]);
+                        let mut neuron_2 = rng.gen_range(0..layers_info[layer_id].0);
                         if neuron_id_1 == neuron_2 {
                             if neuron_2 == layers_info[layer_id] - 1 {
                                 neuron_2 -= 1;
@@ -180,8 +199,6 @@ impl<D: SpecificComponent + Clone + Debug> std::fmt::Display for FaultConfigurat
 
     }
 }
-
-
 
 pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
     //And - Tutti a 1 e il bit a 0 es: 111111111011111

@@ -56,6 +56,8 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         layers: Vec<u32>,
         intra_conn: Vec<bool>,
         parameters_array: Option<Vec<N::T>>,
+        personalized_weights: Option<Vec<Vec<Vec<f64>>>>,
+        personalized_inner_weights: Option<Vec<Option<Vec<Vec<f64>>>>>
     ) -> Self {
         let mut layers_vec = Vec::<Layer<N>>::new();
 
@@ -83,13 +85,30 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             layers_vec.push(Layer::new(
                 idx as u32,
                 *l,
-                match intra_conn[idx] {
-                    true => Some(Snn::<N>::random_weights(*l, *l, true)),
-                    false => None,
+                match personalized_inner_weights {
+                    Some(ref i_weights) => {
+                        match i_weights[idx] {
+                            Some(ref iw) => Some(iw.clone()),
+                            None => None,
+                        }
+                    },
+                    None => {
+                        match intra_conn[idx] {
+                            true => Some(Snn::<N>::random_weights(*l, *l, true)),
+                            false => None,
+                        }
+                    }
                 },
-                match idx {
-                    0 => Snn::<N>::random_weights(*l, n_inputs, false),
-                    _ => Snn::<N>::random_weights(*l, layers[idx - 1], false),
+                match personalized_weights {
+                    Some(ref w) => {
+                        w[idx].clone()
+                    },
+                    None => {
+                        match idx {
+                            0 => Snn::<N>::random_weights(*l, n_inputs, false),
+                            _ => Snn::<N>::random_weights(*l, layers[idx - 1], false),
+                        }
+                    }
                 },
                 match parameters_array {
                     Some(ref pr) => pr.get(idx),
@@ -107,11 +126,11 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         }
     }
 
-    // Returns the number of neurons for each layer.
-    fn get_layer_n_neurons(&self) -> Vec<usize> {
+    // Returns the number of neurons and the presence/absence of inner weights for each layer.
+    fn get_layers_info(&self) -> Vec<(usize, bool)> {
         let mut layers_info = Vec::new();
         for l in self.layers.iter() {
-            layers_info.push(l.neurons.len());
+            layers_info.push((l.neurons.len(), if l.states_weights.is_none() { false } else { true }));
         }
         layers_info
     }
@@ -174,7 +193,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         // Getting the actual fault, if present
         let actual_fault = match fault_configuration {
             Some(f_c) => {
-                let a_f = f_c.get_actual_faults(self.get_layer_n_neurons(), input_matrix.rows);
+                let a_f = f_c.get_actual_faults(self.get_layers_info(), input_matrix.rows);
                 //TODO: This print has to be made conditional for debugging purposes
                 println!("{}", a_f);
                 Some(a_f)
@@ -254,6 +273,11 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         input_matrix: &Input,
         fault_configuration: &FaultConfiguration<N::D>,
     ) -> () {
+        // Check that if the required fault can be on inner weights, if inner weights are not present in any layer => error
+        if fault_configuration.components_contain_inner_weights() && self.layers.iter().all(| l| l.states_weights.is_none()) {
+            panic!("Invalid component for fault configurations: if Inner Weights is selected, be sure to initialize it in the Snn model.")
+        }
+
         // save components that have to be reset every run
         let saved_w = self
             .layers
@@ -374,7 +398,8 @@ impl<N: Neuron + Clone> Layer<N> {
         }
     }
 
-    fn set_parameters(&mut self, parameters: &N::T) {
+    //################# Utility Functions ##################
+    fn set_neuron_parameters(&mut self, parameters: &N::T) {
         for n in self.neurons.iter_mut() {
             n.set_parameters(parameters);
         }
