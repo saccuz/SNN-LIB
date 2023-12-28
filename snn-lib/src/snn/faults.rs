@@ -120,7 +120,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                 let layer_id = rng.gen_range(1..layers_info.len());
                 let neuron_id_1 = rng.gen_range(0..layers_info[layer_id]);
                 let neuron_id_2 = match c {
-                    OuterComponent::Weights => rng.gen_range(0..layers_info[layer_id - 1]) as i32,
+                    OuterComponent::Weights => rng.gen_range(0..layers_info[layer_id - 1].0) as i32,
                     OuterComponent::InnerWeights => {
                         let mut neuron_2 = rng.gen_range(0..layers_info[layer_id].0);
                         if neuron_id_1 == neuron_2 {
@@ -261,3 +261,44 @@ pub fn fault_iter<D: SpecificComponent>(
         }
     }
 }
+
+//################################# EMULATED HW OPERATION #################################//
+//#region Operations
+pub fn add(
+    x: f64,
+    y: f64,
+    actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+    its_me: bool,
+) -> f64 {
+    apply_fault(x + y, actual_fault, its_me)
+}
+
+pub fn mul (
+    x: f64,
+    y: f64,
+    actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+    its_me: bool,
+) -> f64 {
+    apply_fault(x * y, actual_fault, its_me)
+}
+
+pub fn div(
+    x: f64,
+    y: f64,
+    actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+    its_me: bool,
+) -> f64 {
+    apply_fault(x / y, actual_fault, its_me)
+}
+
+pub fn compare(
+    x: f64,
+    y: f64,
+    actual_fault: Option<&ActualFault<LifSpecificComponent>>,
+    its_me: bool,
+) -> u8 {
+    apply_fault(((x > y) as u8) as f64, actual_fault, its_me) as u8
+}
+
+//#endregion
+//########################################################################################//

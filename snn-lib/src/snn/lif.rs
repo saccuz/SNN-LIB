@@ -1,4 +1,4 @@
-use crate::snn::faults::{apply_fault, ActualFault, Component, FaultType};
+use crate::snn::faults::{apply_fault, ActualFault, Component, FaultType, add, div, mul, compare};
 use crate::snn::neuron::NeuronParameters;
 use crate::snn::neuron::{Neuron, SpecificComponent};
 
@@ -85,7 +85,7 @@ impl LifNeuron {
             //se è presente il vettore dei pesi degli stati
             Some(states_weights) => {
                 let sum1 = LifNeuron::scalar_product(states, states_weights, actual_fault, ops);
-                LifNeuron::add(out, sum1, actual_fault, ops[0])
+                add(out, sum1, actual_fault, ops[0])
             }
             //se non è presente il vettore dei pesi degli stati
             None => out,
@@ -93,45 +93,6 @@ impl LifNeuron {
         //Out è la combinazione lineare tra il vettore degli input e il vettore dei pesi associati
     }
 
-    //################################# OPERAZIONI SIMULATE #################################//
-    //#region Operazioni
-    fn add(
-        x: f64,
-        y: f64,
-        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
-        its_me: bool,
-    ) -> f64 {
-        apply_fault(x + y, actual_fault, its_me)
-    }
-    fn mul(
-        x: f64,
-        y: f64,
-        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
-        its_me: bool,
-    ) -> f64 {
-        apply_fault(x * y, actual_fault, its_me)
-    }
-
-    fn div(
-        x: f64,
-        y: f64,
-        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
-        its_me: bool,
-    ) -> f64 {
-        apply_fault(x / y, actual_fault, its_me)
-    }
-
-    fn compare(
-        x: f64,
-        y: f64,
-        actual_fault: Option<&ActualFault<LifSpecificComponent>>,
-        its_me: bool,
-    ) -> u8 {
-        apply_fault(((x > y) as u8) as f64, actual_fault, its_me) as u8
-    }
-
-    //#endregion
-    //########################################################################################//
 }
 
 impl Neuron for LifNeuron {
@@ -260,7 +221,7 @@ impl Neuron for LifNeuron {
             ops[0],
         );
 
-        let spike = LifNeuron::compare(self.v_mem, self.v_th, actual_fault, ops[2]); //if v_mem>v_th then spike=1 else spike=0
+        let spike = compare(self.v_mem, self.v_th, actual_fault, ops[2]); //if v_mem>v_th then spike=1 else spike=0
 
         if spike == 1 {
             self.t_s_last = 0;
@@ -268,7 +229,7 @@ impl Neuron for LifNeuron {
                 ResetMode::Zero => 0.0,
                 ResetMode::RestingPotential => self.v_rest,
                 ResetMode::SubThreshold => {
-                    LifNeuron::add(self.v_mem, -self.v_th, actual_fault, ops[0])
+                    add(self.v_mem, -self.v_th, actual_fault, ops[0])
                 }
             }
         }

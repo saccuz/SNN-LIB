@@ -80,6 +80,65 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             None => (),
         }
 
+        // Check weights
+        match personalized_weights {
+            Some(ref weights) => {
+                // Check that the number of Weights vectors it's equal to the number of layers
+                 if weights.len() != layers.len() {
+                     panic!("Invalid params, expected Parameters vector shape to be [{}], but got [{}] instead", layers.len(), weights.len())
+                 }
+                //Checking Weights matrices shapes for each layer.
+                for (idx , w) in weights.iter().enumerate() {
+
+                    //Check if the number of weights of the first layer for each neuron it's equal to the number of inputs (FC Layer)
+                    if idx == 0 && (w[0].len() != n_inputs as usize  || w.len() != layers[idx] as usize) {
+                        panic!("Invalid params, expected weights shape at index {} to be [{}, {}], but got [{}, {}] instead",
+                               idx ,
+                               layers[idx],
+                               n_inputs,
+                               w.len(),
+                               w[0].len())
+                    }
+                    //Check if the number of weights of the idx layer for each neuron it's equal to the number of neuron of the previous layer (FC Layer)
+                    else if idx != 0 && (w[0].len() != layers[idx-1] as usize || w.len() != layers[idx] as usize) {
+                        panic!("Invalid params, expected weights shape at index {} to be [{}, {}], but got [{}, {}] instead",
+                               idx ,
+                               layers[idx],
+                               n_inputs,
+                               w.len(),
+                               w[0].len())
+                    }
+                }
+            }
+            None => ()
+        }
+
+        match personalized_inner_weights {
+            Some(ref inners) => {
+                if inners.len() != layers.len() {
+                    panic!("Invalid params, expected Inner Weights vector shape to be [{}], but got [{}] instead", layers.len(), inners.len())
+                }
+                for (idx, iw) in inners.iter().enumerate() {
+                    match iw {
+                        Some(i_w) => {
+                            if !intra_conn[idx] {
+                                panic!("Invalid params, found inner weights vector for layer {} with intra_conn value of {}. Consider to change it to {} ", idx, intra_conn[idx], !intra_conn[idx])
+                            }
+                            if i_w.len() != layers[idx] as usize || i_w[0].len() != layers[idx] as usize {
+                                panic!("Invalid params, expected inner weights shape at index {} to be [{}, {}], but got [{}, {}] instead",idx, layers[idx], layers[idx], i_w.len(), i_w[0].len())
+                            }
+                        }
+                        None => {
+                            if intra_conn[idx] {
+                                panic!("Invalid params, inner weights vector not found for layer {} with intra_conn value of {}. Consider to change it to {}", idx, intra_conn[idx], !intra_conn[idx])
+                            }
+                        }
+                    }
+                }
+            }
+            None => ()
+        }
+
         // Building the actual network layers
         for (idx, l) in layers.iter().enumerate() {
             layers_vec.push(Layer::new(
@@ -124,6 +183,26 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         for l in self.layers.iter_mut() {
             l.set_parameters(parameters);
         }
+    }
+
+    pub fn set_layer_weights(&mut self, weights: Vec<Vec<f64>>, l_idx: usize) {
+        self.layers[l_idx].set_weights(weights)
+    }
+
+    pub fn set_layer_inner_weights(&mut self, inner_weights: Vec<Vec<f64>>, l_idx: usize) {
+        self.layers[l_idx].set_inner_weights(inner_weights)
+    }
+
+    pub fn get_neuron_parameters(&mut self, l_idx: usize, n_idx: usize) -> N::T {
+        self.layers[l_idx].get_neuron_parameters(n_idx)
+    }
+
+    pub fn get_layer_weights(&mut self, l_idx: usize) -> &Vec<Vec<f64>> {
+        self.layers[l_idx].get_weights()
+    }
+
+    pub fn get_layer_inner_weights(&mut self, l_idx: usize) -> &Option<Vec<Vec<f64>>> {
+        self.layers[l_idx].get_inner_weights()
     }
 
     // Returns the number of neurons and the presence/absence of inner weights for each layer.
@@ -405,8 +484,46 @@ impl<N: Neuron + Clone> Layer<N> {
         }
     }
 
-    //set_parameters??
-    //Should we add other utility function for debugging?
+    fn get_neuron_parameters(&mut self, idx: usize) -> N::T {
+        return self.neurons[idx].get_parameters()
+    }
+
+    fn set_weights(&mut self, weights: Vec<Vec<f64>>) {
+
+        if weights.len() != self.weights.len() || weights[0].len() != self.weights[0].len() {
+            panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
+                self.weights.len(),
+                self.weights[0].len(),
+                weights.len(),
+                weights[0].len(),
+            )
+        }
+
+        self.weights = weights;
+    }
+
+    fn get_weights(&mut self) -> &Vec<Vec<f64>> {
+        return &self.weights
+    }
+
+    fn set_inner_weights(&mut self, weights: Vec<Vec<f64>>) {
+
+        if weights.len() != self.neurons.len() || weights[0].len() != self.neurons.len() {
+            panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
+                   self.neurons.len(),
+                   self.neurons.len(),
+                   weights.len(),
+                   weights[0].len(),
+            )
+        }
+
+        self.states_weights = Some(weights);
+    }
+
+    fn get_inner_weights(&mut self) -> &Option<Vec<Vec<f64>>> {
+        return &self.states_weights
+    }
+    //#########################################################
 
     fn forward(
         &mut self,

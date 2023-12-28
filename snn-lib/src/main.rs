@@ -78,7 +78,7 @@ fn main() {
         vec![
             Component::Inside(LifSpecificComponent::Membrane),
             Component::Outside(OuterComponent::Connections),
-            Component::Outside(OuterComponent::Weights),
+            Component::Outside(OuterComponent::InnerWeights),
         ],
         8,
         FaultType::StuckAtZero,
