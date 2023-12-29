@@ -1,6 +1,6 @@
 use crate::snn::neuron::SpecificComponent;
 use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng};
+use rand::{thread_rng, Rng, rngs::StdRng, SeedableRng};
 use std::fmt::Debug;
 use crate::snn::lif::LifSpecificComponent;
 

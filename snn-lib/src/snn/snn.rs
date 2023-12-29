@@ -20,25 +20,28 @@ fn get_temp_filepath() -> String {
     //take the path of the working directory and add the name of the log file
     let date = Local::now();
     #[cfg(windows)]
-    return format!("{}\\Logs\\{}-{:02}-{:02}-{:02}.{:02}.{:02}.log",
-                   current_dir().unwrap().display(),
-                   date.year_ce().1,
-                   date.month(),
-                   date.day(),
-                   date.hour(),
-                   date.minute(),
-                   date.second()
-    );
+    return
+        format!("{}\\Logs\\{}-{:02}-{:02}-{:02}.{:02}.{:02}.log",
+                       current_dir().unwrap().display(),
+                       date.year_ce().1,
+                       date.month(),
+                       date.day(),
+                       date.hour(),
+                       date.minute(),
+                       date.second()
+        );
+
     #[cfg(unix)]
-    return format!("{}/Logs/{}-{:02}-{:02}-{:02}.{:02}.{:02}.log",
-                   current_dir().unwrap().display(),
-                   date.year_ce().1,
-                   date.month(),
-                   date.year(),
-                   date.hour(),
-                   date.minute(),
-                   date.second()
-    );
+    return
+        format!("{}/Logs/{}-{:02}-{:02}-{:02}.{:02}.{:02}.log",
+                current_dir().unwrap().display(),
+                date.year_ce().1,
+                date.month(),
+                date.year(),
+                date.hour(),
+                date.minute(),
+                date.second()
+        );
 }
 
 // Snn structure
@@ -165,8 +168,8 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                     },
                     None => {
                         match idx {
-                            0 => Snn::<N>::random_weights(*l, n_inputs, false),
-                            _ => Snn::<N>::random_weights(*l, layers[idx - 1], false),
+                            0 => Snn::<N>::random_weights(*l, n_inputs, false, seed),
+                            _ => Snn::<N>::random_weights(*l, layers[idx - 1], false, seed),
                         }
                     }
                 },
@@ -266,6 +269,16 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         fault_configuration: Option<&FaultConfiguration<N::D>>,
     ) -> Vec<Vec<u8>> {
 
+        //Check if the input shape it's the same as defined in the network.
+        if input_matrix.cols != self.layers[0].weights[0].len() {
+            panic!("Invalid input, expected Input shape to be [{}, {}], but got [{}, {}] instead",
+                   input_matrix.rows,
+                   self.layers[0].weights[0].len(),
+                   input_matrix.rows,
+                   input_matrix.cols
+            )
+        }
+
         // Creating channels for threads communication
         let mut layers_channel_senders = Vec::new();
         let mut layers_channel_receivers = Vec::new();
@@ -359,6 +372,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         &mut self,
         input_matrix: &Input,
         fault_configuration: &FaultConfiguration<N::D>,
+        log_level: u8 // 0: only result on stdout, 1: verbose on stdout, 2: only result on file, 3: verbose on file
     ) -> () {
         // Check that if the required fault can be on inner weights, if inner weights are not present in any layer => error
         if fault_configuration.components_contain_inner_weights() && self.layers.iter().all(| l| l.states_weights.is_none()) {
