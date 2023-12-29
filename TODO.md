@@ -1,22 +1,35 @@
 # cose da fare
-- ~~pacchettizzare i layer per ogni thread (vd. chat discord)~~
-- ~~CAMBIARE COME VENGONO APPLICATI I FAULT NEI VARI COMPONENTI:~~
-- ~~1. Ai componenti statici (pesi, threshold, etc...) il fault Stuck at-X deve essere applicato al tempo 0~~
-- ~~2. Ai Componenti dinamici (membrana, adder etc...) il fault Stuck at-X deve essere applicato ogni qualvolta il valore cambia.~~
-- ~~rendere operazioni aritmetiche generiche in fault.rs~~
-~~- fare i controlli che se nella snn non ci sono innerweights (innerconnections) non puoi selezionare inner weights fault 
-(in realtà modificare la get_actual_fault perchè deve scegliere casualmente solo fra i layer che hanno true come inner connections)~~
-- Aggiungere funzioni utili al logging e controlli su certe funzioni critiche [in parte fatta]
-- refactoring and commenting
-- fare test abbondanti per controllare che tutto funzioni effettivamente bene
-- riprendere matrix [fra avevi fatto qualcosa sull'altro branch?]
-
-# Logging
-- ~~Implement logging~~
-- Make logging conditional (Trace, Debug, Error?) [da capire]
-- In-Depth logging with multiple log file per experiment [da capire]
+- Controlli su certe funzioni critiche [in parte fatta]
+- Riprendere matrix per weights [da controllare ma fatto, vedere se "buttare" matrix.rs, transpose e map sono veramente necessari?]
+- Refactoring and commenting (vedere se si può ottimizzare qualcosa)
+- Fare test abbondanti per controllare che tutto funzioni effettivamente bene
+- Readme
+- Controllare come han fatto gli altri l'anno scorso
 
 # cose carine
-- ~~refactoring~~
-- ottimizzazione [in parte fatta, da capire]
-- simHw a parte [mi sa di no]
+- Make logging conditional (Trace, Debug, Error?) [da controllare ma fatto]
+- In-Depth logging with multiple log file per experiment [da capire]
+
+
+
+
+
+
+<!---
+thread_local!(static LOG: Cell<Logging> = Cell::new(Logging::Verbose));
+
+#[derive(Clone, Copy)]
+pub enum Logging {
+Verbose,
+Info,
+Debug,
+}
+
+pub fn set_logging(level: Logging) {
+LOG.replace(level);
+}
+
+pub fn get_logging() -> Logging {
+LOG.get()
+}
+-->

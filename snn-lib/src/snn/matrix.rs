@@ -1,10 +1,10 @@
-use rand::{thread_rng, Rng};
+use rand::{Rng, SeedableRng};
 use std::fmt::{Debug, Display, Formatter, Result};
 
 pub trait Matrix {
     type T;
     fn zeroes(rows: usize, cols: usize) -> Self;
-    fn random(rows: usize, cols: usize, diag: bool) -> Self;
+    fn random(rows: usize, cols: usize, diag: bool, seed: Option<u64>) -> Self;
     fn from(data: Vec<Vec<Self::T>>) -> Self;
     fn map(&mut self, function: &dyn Fn(Self::T) -> Self::T) -> Self;
     fn transpose(&self) -> Self;
@@ -107,7 +107,7 @@ impl Display for Input {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
             f,
-            "Matrix {{[{}] shape= ({}, {})}}",
+            "Matrix {{[\n{}] shape= ({}, {})}}",
             (&self.data)
                 .into_iter()
                 .map(|row| "  ".to_string()

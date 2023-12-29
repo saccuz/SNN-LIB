@@ -102,6 +102,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         self.n_occurrences
     }
 
+    // Compute all the random choices to configure the actual fault to apply to the current fault emulation
     pub fn get_actual_faults(&self, layers_info: Vec<(usize, bool)>, total_time: usize) -> ActualFault<D> {
         let mut rng = thread_rng();
         let component = (*self.components.choose(&mut rng).unwrap()).clone();
@@ -199,7 +200,7 @@ impl<D: SpecificComponent + Clone + Debug> std::fmt::Display for FaultConfigurat
         component.push_str("]");
         write!(
             f,
-            "{:#<100}\n\n Starting simulation with FaultConfiguration: {{ \n\tcomponents: {},\n\t n_bus: {},\n\t fault_type: {:?},\n\t n_occurrences: {}\n\t }}\n\n{:#<100} \n\n\n ",
+            "{:#<100}\n\n Starting simulation with FaultConfiguration: {{ \n\t components: {},\n\t n_bus: {},\n\t fault_type: {:?},\n\t n_occurrences: {}\n }}\n\n{:#<100} \n",
             "",
             component,
             self.n_bus,

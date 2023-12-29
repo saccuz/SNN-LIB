@@ -21,7 +21,7 @@ impl NeuronParameters for LifNeuronParameters {}
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum LifSpecificComponent {
-    //TODO: Capire se conviene generalizzare queste operazioni ed includerle di default nella libreria
+    //TODO: Capire se conviene generalizzare queste operazioni ed includerle di default nella libreria fault (abbiamo detto di no alla fine)
     Adder,      //add
     Multiplier, //mul
     Divider,    //div

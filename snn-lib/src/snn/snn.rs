@@ -6,7 +6,7 @@ use crate::snn::faults::{
 use crate::snn::matrix::Input;
 use crate::snn::neuron::Neuron;
 use crossbeam::channel::{unbounded, Receiver, Sender};
-use rand::Rng;
+use rand::{Rng, SeedableRng};
 use std::fmt::{Display, Formatter, Result};
 use std::sync::Arc;
 use std::thread;
@@ -57,7 +57,8 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         intra_conn: Vec<bool>,
         parameters_array: Option<Vec<N::T>>,
         personalized_weights: Option<Vec<Vec<Vec<f64>>>>,
-        personalized_inner_weights: Option<Vec<Option<Vec<Vec<f64>>>>>
+        personalized_inner_weights: Option<Vec<Option<Vec<Vec<f64>>>>>,
+        seed: Option<u64>
     ) -> Self {
         let mut layers_vec = Vec::<Layer<N>>::new();
 
@@ -153,7 +154,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                     },
                     None => {
                         match intra_conn[idx] {
-                            true => Some(Snn::<N>::random_weights(*l, *l, true)),
+                            true => Some(Snn::<N>::random_weights(*l, *l, true, seed)),
                             false => None,
                         }
                     }
@@ -364,26 +365,34 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             panic!("Invalid component for fault configurations: if Inner Weights is selected, be sure to initialize it in the Snn model.")
         }
 
-        // save components that have to be reset every run
+        // Save components that have to be reset every run
         let saved_w = self
             .layers
             .iter()
             .map(|x| (x.weights.clone(), x.states_weights.clone()))
             .collect::<Vec<(Vec<Vec<f64>>, Option<Vec<Vec<f64>>>)>>();
 
-        println!("Output logs can be found in: {}", get_temp_filepath());
+        let mut _print_redirect;
+        if log_level == 2 || log_level == 3 {
+            println!("Output logs can be found in: {}", get_temp_filepath());
 
-        let log = OpenOptions::new()
-            .truncate(true)
-            .read(true)
-            .write(true)
-            .create(true)
-            .open(get_temp_filepath())
-            .unwrap();
+            let log = OpenOptions::new()
+                .truncate(true)
+                .read(true)
+                .write(true)
+                .create(true)
+                .open(get_temp_filepath())
+                .unwrap();
 
-        let _print_redirect = Redirect::stdout(log).unwrap();
+            _print_redirect = Redirect::stdout(log).unwrap();
+        }
 
-        println!("{}", fault_configuration);
+        if log_level == 1 || log_level == 3 {
+            println!("{}", self);
+            println!("{}", fault_configuration);
+            println!("\nInput matrix:\n{}\n\n", input_matrix);
+        }
+
         for i in 0..fault_configuration.get_n_occurrences() {
             let result = self
                 .clone()
@@ -391,7 +400,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
 
             println!("Result for rep {:02}: {:?}\n", i, result);
 
-            // restore original weights
+            // Restore original weights
             for (idx, l) in self.layers.iter_mut().enumerate() {
                 l.weights = saved_w[idx].0.clone();
                 l.states_weights = saved_w[idx].1.clone();
