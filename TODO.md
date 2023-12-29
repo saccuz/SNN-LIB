@@ -1,3 +1,4 @@
+
 # cose da fare
 - Controlli su certe funzioni critiche [in parte fatta]
 - Riprendere matrix per weights [da controllare ma fatto, vedere se "buttare" matrix.rs, transpose e map sono veramente necessari?]

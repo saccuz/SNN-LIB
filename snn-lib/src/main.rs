@@ -92,7 +92,9 @@ fn main() {
             Component::Outside(OuterComponent::Connections),
         ],
         8,
-        FaultType::StuckAtZero,
+        //FaultType::StuckAtZero,
+        //FaultType::StuckAtOne,
+        FaultType::TransientBitFlip,
         100,
     );
 

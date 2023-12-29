@@ -14,6 +14,8 @@ use std::fs::OpenOptions;
 use gag::{Redirect};
 use std::env::current_dir;
 use chrono::{Datelike, Timelike, Local};
+use rand::prelude::StdRng;
+
 
 // Setting the format for the log file
 fn get_temp_filepath() -> String {
@@ -267,6 +269,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         &mut self,
         input_matrix: &Input,
         fault_configuration: Option<&FaultConfiguration<N::D>>,
+        log_level: u8
     ) -> Vec<Vec<u8>> {
 
         //Check if the input shape it's the same as defined in the network.
@@ -295,8 +298,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         let actual_fault = match fault_configuration {
             Some(f_c) => {
                 let a_f = f_c.get_actual_faults(self.get_layers_info(), input_matrix.rows);
-                //TODO: This print has to be made conditional for debugging purposes
-                println!("{}", a_f);
+                if log_level == 1 || log_level == 3 { println!("{}", a_f); }
                 Some(a_f)
             },
             None => { None }
@@ -410,7 +412,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         for i in 0..fault_configuration.get_n_occurrences() {
             let result = self
                 .clone()
-                .forward(input_matrix, Some(fault_configuration));
+                .forward(input_matrix, Some(fault_configuration), log_level);
 
             println!("Result for rep {:02}: {:?}\n", i, result);
 
@@ -423,8 +425,13 @@ impl<N: Neuron + Clone + Send> Snn<N> {
     }
 
     // Generates random weights matrix
-    fn random_weights(h: u32, w: u32, diag: bool) -> Vec<Vec<f64>> {
-        let mut rng = rand::thread_rng();
+    fn random_weights(h: u32, w: u32, diag: bool, seed: Option<u64>) -> Vec<Vec<f64>> {
+        // If a seed is given, it is set for the PRNG, otherwise it
+        let mut rng = match seed {
+            Some(s) => StdRng::seed_from_u64(s),
+            None => StdRng::from_entropy()
+        };
+
         let mut weights = Vec::<Vec<f64>>::new();
         for r in 0..h {
             let mut row = Vec::<f64>::new();

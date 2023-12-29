@@ -1,5 +1,6 @@
 use rand::{Rng, SeedableRng};
 use std::fmt::{Debug, Display, Formatter, Result};
+use rand::prelude::StdRng;
 
 pub trait Matrix {
     type T;
@@ -27,8 +28,13 @@ impl Matrix for Input {
         }
     }
 
-    fn random(rows: usize, cols: usize, diag: bool) -> Input {
-        let mut rng = thread_rng();
+    fn random(rows: usize, cols: usize, diag: bool, seed: Option<u64>) -> Input {
+        let mut rng = match seed {
+            Some(s) => StdRng::seed_from_u64(s),
+            None => StdRng::from_entropy()
+        };
+
+        //let mut rng = StdRng::seed_from_u64(20);
         let mut res = Input::zeroes(rows, cols);
 
         for i in 0..rows {
