@@ -1,8 +1,8 @@
+use crate::snn::lif::LifSpecificComponent;
 use crate::snn::neuron::SpecificComponent;
 use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng, rngs::StdRng, SeedableRng};
+use rand::{thread_rng, Rng /*, rngs::StdRng, SeedableRng */};
 use std::fmt::Debug;
-use crate::snn::lif::LifSpecificComponent;
 
 // Which of the three basic types of fault is going to happen
 #[derive(Clone, Debug)]
@@ -82,16 +82,12 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
     // Check if between faultable components there is "inner_weights"
     pub fn components_contain_inner_weights(&self) -> bool {
         let mut ret = false;
-        for c in self.components.iter() {
-            match c {
-                Component::Outside(o) => match o {
-                    OuterComponent::InnerWeights => {
-                        ret = true;
-                        break;
-                    },
-                    _ => {}
-                },
-                _ => {}
+        for comp in self.components.iter() {
+            if let Component::Outside(outer) = comp {
+                if let OuterComponent::InnerWeights = outer {
+                    ret = true;
+                    break;
+                }
             }
         }
         ret
@@ -103,7 +99,11 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
     }
 
     // Compute all the random choices to configure the actual fault to apply to the current fault emulation
-    pub fn get_actual_faults(&self, layers_info: Vec<(usize, bool)>, total_time: usize) -> ActualFault<D> {
+    pub fn get_actual_faults(
+        &self,
+        layers_info: Vec<(usize, bool)>,
+        total_time: usize,
+    ) -> ActualFault<D> {
         let mut rng = thread_rng();
         let component = (*self.components.choose(&mut rng).unwrap()).clone();
         let time_tbf = match self.fault_type {
@@ -122,14 +122,16 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                     OuterComponent::InnerWeights => {
                         // Select every layer that has InnerWeights and randomly return one of those
                         // Info: we safely unwrap this because it cannot panic (we make it panic in snn.rs -> emulate_fault if there are no inner weights).
-                        *layers_info.iter().enumerate() //now we have (x = (idx, (n_neurons, bool to track the inner weights' presence))
-                            .filter(|x| x.1.1) // check if the inner weights' flag is true
+                        *layers_info
+                            .iter()
+                            .enumerate() //now we have (x = (idx, (n_neurons, bool to track the inner weights' presence))
+                            .filter(|x| x.1 .1) // check if the inner weights' flag is true
                             .map(|x| x.0) // take only the index
-                            .collect::<Vec<usize>>().choose(&mut rng).unwrap() // random selection
-                    },
-                    _ => {
-                        rng.gen_range(1..layers_info.len())
+                            .collect::<Vec<usize>>()
+                            .choose(&mut rng)
+                            .unwrap() // random selection
                     }
+                    _ => rng.gen_range(1..layers_info.len()),
                 };
                 let neuron_id_1 = rng.gen_range(0..layers_info[layer_id].0);
                 let neuron_id_2 = match c {
@@ -208,8 +210,6 @@ impl<D: SpecificComponent + Clone + Debug> std::fmt::Display for FaultConfigurat
             self.n_occurrences,
             ""
         )
-
-
     }
 }
 
@@ -286,7 +286,7 @@ pub fn add(
     apply_fault(x + y, actual_fault, its_me)
 }
 
-pub fn mul (
+pub fn mul(
     x: f64,
     y: f64,
     actual_fault: Option<&ActualFault<LifSpecificComponent>>,

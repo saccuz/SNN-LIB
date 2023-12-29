@@ -1,4 +1,4 @@
-use crate::snn::faults::{apply_fault, ActualFault, Component, FaultType, add, div, mul, compare};
+use crate::snn::faults::{add, apply_fault, compare, div, mul, ActualFault, Component, FaultType};
 use crate::snn::generic_matrix::MatrixG;
 use crate::snn::neuron::NeuronParameters;
 use crate::snn::neuron::{Neuron, SpecificComponent};
@@ -28,9 +28,9 @@ pub enum LifSpecificComponent {
     Divider,    //div
     Comparator, //compare
     //################################################################################################
-    Threshold,  //v_th
-    Membrane,   //v_mem
-    Rest,       //v_rest
+    Threshold, //v_th
+    Membrane,  //v_mem
+    Rest,      //v_rest
 }
 
 impl SpecificComponent for LifSpecificComponent {}
@@ -44,7 +44,7 @@ pub struct LifNeuron {
     r_type: ResetMode,
     t_s_last: u64, //t_s_last nel nostro caso funge come variazione di tempo dall'ultima spike. Quindi è uguale a t-t_last
     tau: f64,
-    broken: bool
+    broken: bool,
 }
 
 impl LifNeuron {
@@ -65,7 +65,6 @@ impl LifNeuron {
                 ops[0],
             ); // multiply spike for input's weights
         }
-
         scalar
     }
 
@@ -93,7 +92,6 @@ impl LifNeuron {
         }
         // Out it's the linear combination between input array and array of associated weights
     }
-
 }
 
 impl Neuron for LifNeuron {
@@ -111,7 +109,7 @@ impl Neuron for LifNeuron {
                 r_type: ResetMode::Zero,
                 t_s_last: 0,
                 tau: p.tau,
-                broken: false
+                broken: false,
             },
             None => LifNeuron {
                 id,
@@ -121,7 +119,7 @@ impl Neuron for LifNeuron {
                 r_type: ResetMode::Zero,
                 t_s_last: 0,
                 tau: 0.0,
-                broken: false
+                broken: false,
             },
         }
     }
@@ -158,9 +156,10 @@ impl Neuron for LifNeuron {
         self.t_s_last += 1;
 
         let mut ops = vec![false; 7];
-        match actual_fault {
-            Some(a_f) => match &a_f.component {
-                Component::Inside(real_comp) => match real_comp {
+
+        if let Some(a_f) = actual_fault {
+            if let Component::Inside(real_comp) = &a_f.component {
+                match real_comp {
                     LifSpecificComponent::Adder => ops[0] = true,
                     LifSpecificComponent::Multiplier => ops[1] = true,
                     LifSpecificComponent::Comparator => ops[2] = true,
@@ -168,10 +167,8 @@ impl Neuron for LifNeuron {
                     LifSpecificComponent::Membrane => ops[4] = true,
                     LifSpecificComponent::Rest => ops[5] = true,
                     LifSpecificComponent::Divider => ops[6] = true,
-                },
-                _ => {}
-            },
-            None => {}
+                }
+            }
         }
 
         // Apply faults to v_mem, this is done every iteration because v_mem changes everytime we compute the lif formula.
@@ -195,11 +192,17 @@ impl Neuron for LifNeuron {
                 actual_fault,
                 &ops,
             ),
-            None => LifNeuron::y(input, states, &weights.data[n_neuron], None, actual_fault, &ops),
+            None => LifNeuron::y(
+                input,
+                states,
+                &weights.data[n_neuron],
+                None,
+                actual_fault,
+                &ops,
+            ),
         };
 
-        let exponent: f64 =
-            div(-(self.t_s_last as f64), self.tau, actual_fault, ops[6]);
+        let exponent: f64 = div(-(self.t_s_last as f64), self.tau, actual_fault, ops[6]);
 
         // rest + (mem - rest) * exp(dt/tau) + sum(w*x -wi*xi)
         // Operation:
@@ -229,24 +232,19 @@ impl Neuron for LifNeuron {
             self.v_mem = match self.r_type {
                 ResetMode::Zero => 0.0,
                 ResetMode::RestingPotential => self.v_rest,
-                ResetMode::SubThreshold => {
-                    add(self.v_mem, -self.v_th, actual_fault, ops[0])
-                }
+                ResetMode::SubThreshold => add(self.v_mem, -self.v_th, actual_fault, ops[0]),
             }
         }
 
         // Corrupting v_mem memory when the value is written back to memory
         self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
-        // Reapplying bitflip to v_th and v_rest, only if the fault was a bit flip
-        match actual_fault {
-            Some(a_f) => match &a_f.fault_type {
-                FaultType::TransientBitFlip => {
-                    self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
-                    self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
-                }
-                _ => ()
+
+        // Reapplying bit flip to v_th and v_rest, only if the fault was a bit flip
+        if let Some(a_f) = actual_fault {
+            if let FaultType::TransientBitFlip = &a_f.fault_type {
+                self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
+                self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
             }
-            None => ()
         }
         spike
     }
