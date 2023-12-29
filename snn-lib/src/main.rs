@@ -2,7 +2,6 @@ mod snn;
 
 use crate::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponent};
 use crate::snn::lif::{LifNeuron, LifNeuronParameters, LifSpecificComponent, ResetMode};
-use crate::snn::matrix::{Input, Matrix};
 use crate::snn::generic_matrix::MatrixG;
 use crate::snn::snn::Snn;
 
@@ -11,22 +10,15 @@ fn main() {
     // Set the seed for weights, inner weights and input matrix
     let seed = Some(21);
 
-
     // Configuring the Snn
-    let n_inputs: usize = 10;
-    let layers = vec![10,5,3];
+    let n_inputs: usize = 20;
+    let layers = vec![15,10,5,2];
+    let layers_inner_connections = vec![true; layers.len()];
 
     // Randomly creating an input matrix
-    let input_matrix = Input::random(17, n_inputs , false, seed);
+    let input_matrix = MatrixG::random(24, n_inputs, false, seed, 0, 1);
+    //let input_matrix = Input::random(17, n_inputs , false, seed);
     //println!("{}", input_matrix);
-
-    // TODO: Drop these lines, but first check the correctness of MatrixG
-    //let inputttt = MatrixG::random(17, n_inputs, false, seed, 0, 1);
-    //let weightsss = MatrixG::random(10, 5 , false, seed, 0.01, 0.99);
-    //let inner_weightsss = MatrixG::random(5, 5 , true, seed, 0.01, 0.99);
-    //println!("{}", inputttt);
-    //println!("{}", weightsss);
-    //println!("{}", inner_weightsss);
 
     // 1 - First way to set specific neuron parameters, different for each layer
     let mut neuron_parameters_per_layer = Vec::<LifNeuronParameters>::new();
@@ -52,7 +44,7 @@ fn main() {
                 v.push(vec![0.20; layers[idx-1] as usize]);
             }
         }
-        personalized_weights.push(v);
+        personalized_weights.push(MatrixG::from(v));
     }
 
     // Setting personalized inner weights (all equal) - ONLY FOR DEBUG PURPOSES
@@ -71,11 +63,11 @@ fn main() {
             }
             v.push(x)
         }
-        personalized_inner_weights.push(Some(v));
+        personalized_inner_weights.push(Some(MatrixG::from(v)));
     }
 
     // Snn creation
-    let mut snn = Snn::<LifNeuron>::new(n_inputs as u32, layers, vec![true, true, true], Some(neuron_parameters_per_layer), Some(personalized_weights), Some(personalized_inner_weights), seed);
+    let mut snn = Snn::<LifNeuron>::new(n_inputs as u32, layers, layers_inner_connections, Some(neuron_parameters_per_layer), Some(personalized_weights), Some(personalized_inner_weights), seed);
 
     // Fault injection
     let fault_configuration = FaultConfiguration::new(

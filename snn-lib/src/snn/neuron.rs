@@ -1,5 +1,6 @@
 use crate::snn::faults::ActualFault;
 use std::fmt::Debug;
+use crate::snn::generic_matrix::MatrixG;
 
 pub trait Neuron {
     type T: NeuronParameters;
@@ -11,8 +12,8 @@ pub trait Neuron {
     fn forward(
         &mut self,
         input: &Vec<u8>,
-        states_weights: &Option<Vec<Vec<f64>>>,
-        weights: &Vec<Vec<f64>>,
+        states_weights: &Option<MatrixG<f64>>,
+        weights: &MatrixG<f64>,
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault<Self::D>>,
     ) -> u8;

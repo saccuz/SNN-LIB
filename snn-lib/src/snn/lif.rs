@@ -1,4 +1,5 @@
 use crate::snn::faults::{apply_fault, ActualFault, Component, FaultType, add, div, mul, compare};
+use crate::snn::generic_matrix::MatrixG;
 use crate::snn::neuron::NeuronParameters;
 use crate::snn::neuron::{Neuron, SpecificComponent};
 
@@ -149,8 +150,8 @@ impl Neuron for LifNeuron {
     fn forward(
         &mut self,
         input: &Vec<u8>,
-        states_weights: &Option<Vec<Vec<f64>>>,
-        weights: &Vec<Vec<f64>>,
+        states_weights: &Option<MatrixG<f64>>,
+        weights: &MatrixG<f64>,
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault<LifSpecificComponent>>,
     ) -> u8 {
@@ -189,12 +190,12 @@ impl Neuron for LifNeuron {
             Some(states_weights) => LifNeuron::y(
                 input,
                 states,
-                &weights[n_neuron],
-                Some(&states_weights[n_neuron]),
+                &weights.data[n_neuron],
+                Some(&states_weights.data[n_neuron]),
                 actual_fault,
                 &ops,
             ),
-            None => LifNeuron::y(input, states, &weights[n_neuron], None, actual_fault, &ops),
+            None => LifNeuron::y(input, states, &weights.data[n_neuron], None, actual_fault, &ops),
         };
 
         let exponent: f64 =
