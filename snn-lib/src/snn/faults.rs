@@ -1,7 +1,7 @@
 use crate::snn::lif::LifSpecificComponent;
 use crate::snn::neuron::SpecificComponent;
 use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng /*, rngs::StdRng, SeedableRng */};
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::fmt::Debug;
 
 // Which of the three basic types of fault is going to happen
@@ -12,7 +12,7 @@ pub enum FaultType {
     TransientBitFlip,
 }
 
-//Components that can generate faults
+// Components that can generate faults
 #[derive(Clone, Debug)]
 pub enum Component<D: SpecificComponent> {
     Inside(D),
@@ -21,9 +21,9 @@ pub enum Component<D: SpecificComponent> {
 
 #[derive(Clone, Debug)]
 pub enum OuterComponent {
-    Weights,      //weights
-    InnerWeights, //state_weights
-    Connections,  //weight bus
+    Weights,      // weights
+    InnerWeights, // state_weights
+    Connections,  // weight bus
 }
 
 pub struct ActualFault<D: SpecificComponent> {
@@ -103,8 +103,12 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         &self,
         layers_info: Vec<(usize, bool)>,
         total_time: usize,
+        seed: Option<u64>,
     ) -> ActualFault<D> {
-        let mut rng = thread_rng();
+        let mut rng = match seed {
+            Some(s) => StdRng::seed_from_u64(s),
+            None => StdRng::from_entropy(),
+        };
         let component = (*self.components.choose(&mut rng).unwrap()).clone();
         let time_tbf = match self.fault_type {
             FaultType::TransientBitFlip => Some(rng.gen_range(0..total_time)),
@@ -124,7 +128,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                         // Info: we safely unwrap this because it cannot panic (we make it panic in snn.rs -> emulate_fault if there are no inner weights).
                         *layers_info
                             .iter()
-                            .enumerate() //now we have (x = (idx, (n_neurons, bool to track the inner weights' presence))
+                            .enumerate() // now we have (x = (idx, (n_neurons, bool to track the inner weights' presence))
                             .filter(|x| x.1 .1) // check if the inner weights' flag is true
                             .map(|x| x.0) // take only the index
                             .collect::<Vec<usize>>()
@@ -174,8 +178,6 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         };
         //######################################################//
 
-        // Uncomment the following line for nice output printing
-        //println!("The component selected for fault injection in this repetition is {:?}", component);
         ActualFault {
             component,
             layer_id,
@@ -214,7 +216,7 @@ impl<D: SpecificComponent + Clone + Debug> std::fmt::Display for FaultConfigurat
 }
 
 pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
-    //And - Tutti a 1 e il bit a 0 es: 111111111011111
+    // And - All bit at 1 while the offset bit to 0, i.e.: 111111111011111
 
     let mut value_bits = x.to_bits();
 
@@ -224,18 +226,17 @@ pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
 }
 
 pub fn stuck_at_one(x: &mut f64, offset: u8) -> () {
-    //or - tutti a 0 e il bit a 1 0000000000100000
+    // Or - All bit at 0 while the offset bit to 1, i.e.: 0000000000100000
 
     let mut value_bits = x.to_bits();
 
     value_bits |= 1_u64 << offset;
 
-    //let result = f64::from_bits(value_bits);
     *x = f64::from_bits(value_bits);
 }
 
 pub fn bit_flip(x: &mut f64, offset: u8) -> () {
-    //xor - tutti a 0 e il bit a 1 es: 00001000000
+    // XOR - All bit at 0 while the offset bit to 1, i.e.: 00001000000
 
     let mut value_bits = x.to_bits();
 
@@ -276,7 +277,7 @@ pub fn fault_iter<D: SpecificComponent>(
 }
 
 //################################# EMULATED HW OPERATION #################################//
-//#region Operations
+
 pub fn add(
     x: f64,
     y: f64,
@@ -313,5 +314,4 @@ pub fn compare(
     apply_fault(((x > y) as u8) as f64, actual_fault, its_me) as u8
 }
 
-//#endregion
 //########################################################################################//

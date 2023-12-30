@@ -1,16 +1,18 @@
-use rand::{Rng, SeedableRng};
-use std::fmt::{Debug, Display, Formatter, Result};
 use rand::distributions::uniform::SampleUniform;
 use rand::prelude::StdRng;
+use rand::{Rng, SeedableRng};
+use std::fmt::{Debug, Display, Formatter, Result};
+use std::ops::{Index, IndexMut};
 
 #[derive(Clone)]
-pub struct MatrixG<T : Default + Clone + Copy + SampleUniform + PartialOrd + Display> {
+pub struct MatrixG<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> {
     pub rows: usize,
     pub cols: usize,
     pub data: Vec<Vec<T>>,
 }
 
-impl<T : Default + Clone + Copy + SampleUniform + PartialOrd + Display> MatrixG<T> {
+impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> MatrixG<T> {
+    // Return a matrix of all zeroes (or the default value of T)
     fn zeroes(rows: usize, cols: usize) -> MatrixG<T> {
         MatrixG {
             rows,
@@ -19,10 +21,18 @@ impl<T : Default + Clone + Copy + SampleUniform + PartialOrd + Display> MatrixG<
         }
     }
 
-    pub fn random(rows: usize, cols: usize, diag: bool, seed: Option<u64>, a: T, b: T) -> MatrixG<T> {
+    // Return a random generated matrix
+    pub fn random(
+        rows: usize,
+        cols: usize,
+        diag: bool,
+        seed: Option<u64>,
+        a: T,
+        b: T,
+    ) -> MatrixG<T> {
         let mut rng = match seed {
             Some(s) => StdRng::seed_from_u64(s),
-            None => StdRng::from_entropy()
+            None => StdRng::from_entropy(),
         };
 
         let mut res = MatrixG::zeroes(rows, cols);
@@ -30,13 +40,15 @@ impl<T : Default + Clone + Copy + SampleUniform + PartialOrd + Display> MatrixG<
             for j in 0..cols {
                 if diag && i == j {
                     res.data[i][j] = T::default();
+                } else {
+                    res.data[i][j] = rng.gen_range(a..=b);
                 }
-                else { res.data[i][j] = rng.gen_range(a..=b); }
             }
         }
         res
     }
 
+    // Create a Matrix starting from a Vector of Vector
     pub fn from(data: Vec<Vec<T>>) -> MatrixG<T> {
         let len = data[0].len();
         for t in &data {
@@ -54,19 +66,6 @@ impl<T : Default + Clone + Copy + SampleUniform + PartialOrd + Display> MatrixG<
             data,
         }
     }
-
-    // TODO: if needed implement this
-    /*fn transpose(&self) -> MatrixG {
-        let mut res = MatrixG::zeroes(self.cols, self.rows);
-
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                res.data[j][i] = self.data[i][j];
-            }
-        }
-
-        res
-    }*/
 }
 
 impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> Debug for MatrixG<T> {
@@ -79,15 +78,16 @@ impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> Debug for
                 .into_iter()
                 .map(|row| "  ".to_string()
                     + &row
-                    .into_iter()
-                    .map(|value| value.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" "))
+                        .into_iter()
+                        .map(|value| value.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" "))
                 .collect::<Vec<String>>()
                 .join("\n")
         )
     }
 }
+
 impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> Display for MatrixG<T> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         write!(
@@ -98,14 +98,30 @@ impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> Display f
                 .into_iter()
                 .map(|row| "  ".to_string()
                     + &row
-                    .into_iter()
-                    .map(|value| value.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" "))
+                        .into_iter()
+                        .map(|value| value.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" "))
                 .collect::<Vec<String>>()
                 .join("\n"),
             self.rows,
             self.cols
         )
+    }
+}
+
+// Allow MatrixG to be accessed with matrix[i] without explicitly referencing matrix.data
+impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> Index<usize> for MatrixG<T> {
+    type Output = Vec<T>;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
+}
+
+impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> IndexMut<usize>
+    for MatrixG<T>
+{
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.data[index]
     }
 }

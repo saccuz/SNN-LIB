@@ -22,15 +22,13 @@ impl NeuronParameters for LifNeuronParameters {}
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum LifSpecificComponent {
-    //TODO: Capire se conviene generalizzare queste operazioni ed includerle di default nella libreria fault (abbiamo detto di no alla fine)
-    Adder,      //add
-    Multiplier, //mul
-    Divider,    //div
-    Comparator, //compare
-    //################################################################################################
-    Threshold, //v_th
-    Membrane,  //v_mem
-    Rest,      //v_rest
+    Adder,      // add
+    Multiplier, // mul
+    Divider,    // div
+    Comparator, // compare
+    Threshold,  // v_th
+    Membrane,   // v_mem
+    Rest,       // v_rest
 }
 
 impl SpecificComponent for LifSpecificComponent {}
@@ -42,8 +40,9 @@ pub struct LifNeuron {
     v_rest: f64,
     v_th: f64,
     r_type: ResetMode,
-    t_s_last: u64, //t_s_last nel nostro caso funge come variazione di tempo dall'ultima spike. Quindi è uguale a t-t_last
+    t_s_last: f64, // time from last spike of the neuron -> t_s_last = t - t_last
     tau: f64,
+    time_step: f64,
     broken: bool,
 }
 
@@ -57,13 +56,13 @@ impl LifNeuron {
         let mut scalar = 0.0;
 
         for (idx, x) in inputs.iter().enumerate() {
-            // summation for each neuron
+            // Summation for each neuron
             scalar = add(
                 scalar,
                 mul(*x as f64, weights[idx], actual_fault, ops[1]),
                 actual_fault,
                 ops[0],
-            ); // multiply spike for input's weights
+            ); // Multiply spike for input's weights
         }
         scalar
     }
@@ -76,9 +75,7 @@ impl LifNeuron {
         actual_fault: Option<&ActualFault<LifSpecificComponent>>,
         ops: &Vec<bool>,
     ) -> f64 {
-        //TODO: AGGIUNGERE CONTROLLI SUI VARI PARAMETRI
-
-        // scalar product between input and input's weights
+        // Scalar product between input and input's weights
         let out = LifNeuron::scalar_product(inputs, weights, actual_fault, ops);
 
         match states_weights {
@@ -101,24 +98,34 @@ impl Neuron for LifNeuron {
     // (t_s_last is set to 0 by default at the beginning, no previous impulse received from the beginning of the snn existence)
     fn new(id: u32, parameters: Option<&LifNeuronParameters>) -> Self {
         match parameters {
-            Some(p) => LifNeuron {
-                id,
-                v_mem: 0.0,
-                v_rest: p.v_rest,
-                v_th: p.v_th,
-                r_type: ResetMode::Zero,
-                t_s_last: 0,
-                tau: p.tau,
-                broken: false,
-            },
+            Some(p) => {
+                if p.tau <= 0.0 {
+                    panic!("Invalid neuron params, tau must be positive");
+                }
+                if p.v_th <= 0.0 {
+                    panic!("Invalid neuron params, v_th must be positive");
+                }
+                LifNeuron {
+                    id,
+                    v_mem: 0.0,
+                    v_rest: p.v_rest,
+                    v_th: p.v_th,
+                    r_type: ResetMode::Zero,
+                    t_s_last: 0.0,
+                    tau: p.tau,
+                    time_step: 1e-1,
+                    broken: false,
+                }
+            }
             None => LifNeuron {
                 id,
                 v_mem: 0.0,
                 v_rest: 0.0,
                 v_th: 0.8,
                 r_type: ResetMode::Zero,
-                t_s_last: 0,
-                tau: 0.0,
+                t_s_last: 0.0,
+                tau: 5e-3, // 5ms it's a realistic biological neuron value for R=50MΩ  and C=100pF
+                time_step: 1e-1, // We fix a time step for every call of the forward.
                 broken: false,
             },
         }
@@ -144,7 +151,7 @@ impl Neuron for LifNeuron {
         self.id
     }
 
-    // implements the forward pass of the snn
+    // Implements the forward pass of the snn
     fn forward(
         &mut self,
         input: &Vec<u8>,
@@ -153,7 +160,12 @@ impl Neuron for LifNeuron {
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault<LifSpecificComponent>>,
     ) -> u8 {
-        self.t_s_last += 1;
+        self.t_s_last += self.time_step;
+
+        // Stop neuron execution if no spike is present in input
+        if input.iter().all(|x| *x == 0) {
+            return 0;
+        }
 
         let mut ops = vec![false; 7];
 
@@ -174,7 +186,7 @@ impl Neuron for LifNeuron {
         // Apply faults to v_mem, this is done every iteration because v_mem changes everytime we compute the lif formula.
         self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
 
-        //This broken variable check is done to avoid doing function calls every iteration for Stuck at-X faults.
+        // This broken variable check is done to avoid doing function calls every iteration for Stuck at-X faults.
         if !self.broken {
             self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
             self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
@@ -187,27 +199,20 @@ impl Neuron for LifNeuron {
             Some(states_weights) => LifNeuron::y(
                 input,
                 states,
-                &weights.data[n_neuron],
-                Some(&states_weights.data[n_neuron]),
+                &weights[n_neuron],
+                Some(&states_weights[n_neuron]),
                 actual_fault,
                 &ops,
             ),
-            None => LifNeuron::y(
-                input,
-                states,
-                &weights.data[n_neuron],
-                None,
-                actual_fault,
-                &ops,
-            ),
+            None => LifNeuron::y(input, states, &weights[n_neuron], None, actual_fault, &ops),
         };
 
-        let exponent: f64 = div(-(self.t_s_last as f64), self.tau, actual_fault, ops[6]);
+        let exponent: f64 = div(-self.t_s_last, self.tau, actual_fault, ops[6]);
 
         // rest + (mem - rest) * exp(dt/tau) + sum(w*x -wi*xi)
         // Operation:
         // self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
-        // Splitted in sub part, to possibly inject fault in each operation
+        // Split in sub part, to possibly inject fault in each operation
         self.v_mem = add(
             add(
                 mul(
@@ -225,10 +230,10 @@ impl Neuron for LifNeuron {
             ops[0],
         );
 
-        let spike = compare(self.v_mem, self.v_th, actual_fault, ops[2]); //if v_mem>v_th then spike=1 else spike=0
+        let spike = compare(self.v_mem, self.v_th, actual_fault, ops[2]); // if v_mem>v_th then spike=1 else spike=0
 
         if spike == 1 {
-            self.t_s_last = 0;
+            self.t_s_last = 0.0;
             self.v_mem = match self.r_type {
                 ResetMode::Zero => 0.0,
                 ResetMode::RestingPotential => self.v_rest,

@@ -1,19 +1,12 @@
 
-# cose da fare
-- Controlli su certe funzioni critiche [in parte fatta]
-- Riprendere matrix per weights [da controllare ma fatto, vedere se "buttare" matrix.rs, transpose e map sono veramente necessari?]
+# Cose da fare
 - Refactoring and commenting (vedere se si può ottimizzare qualcosa)
 - Fare test abbondanti per controllare che tutto funzioni effettivamente bene
 - Readme
 - Controllare come han fatto gli altri l'anno scorso
 
-# cose carine
-- Make logging conditional (Trace, Debug, Error?) [da controllare ma fatto]
-- In-Depth logging with multiple log file per experiment [da capire]
-
-
-
-
+# Cose carine
+- Identificare i cambiamenti negli output della rete per ogni iterazione della simulazione (salvare i risultati ?)
 
 
 <!---

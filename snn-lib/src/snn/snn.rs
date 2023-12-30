@@ -2,23 +2,21 @@ use crate::snn::faults::{
     bit_flip, fault_iter, stuck_at_one, stuck_at_zero, ActualFault, Component, FaultConfiguration,
     FaultType, OuterComponent,
 };
+use crate::snn::generic_matrix::MatrixG;
 use crate::snn::neuron::Neuron;
-use crossbeam::channel::{unbounded, Receiver, Sender};
-use std::cmp::min;
-//use rand::{Rng, SeedableRng};
 use chrono::{Datelike, Local, Timelike};
+use crossbeam::channel::{unbounded, Receiver, Sender};
 use gag::Redirect;
+use std::cmp::min;
 use std::env::current_dir;
 use std::fmt::{Display, Formatter, Result};
 use std::fs::OpenOptions;
 use std::sync::Arc;
 use std::thread;
-//use rand::prelude::StdRng;
-use crate::snn::generic_matrix::MatrixG;
 
 // Setting the format for the log file
 fn get_temp_filepath() -> String {
-    //take the path of the working directory and add the name of the log file
+    // Take the path of the working directory and add the name of the log file
     let date = Local::now();
     #[cfg(windows)]
     return format!(
@@ -65,7 +63,22 @@ impl<N: Neuron + Clone + Send> Snn<N> {
     ) -> Self {
         let mut layers_vec = Vec::<Layer<N>>::new();
 
-        // Intra connections (between neurons of same layer) parameter check
+        // The network should have at least 1 input.
+        if n_inputs == 0 {
+            panic!("Invalid params, n_inputs expected to be greater than 0")
+        }
+
+        // The network can't be empty, so at least one layers has to exists.
+        if layers.len() == 0 {
+            panic!("Invalid params, layers len expected to be greater than 0. Can't create an empty network")
+        }
+
+        // The number of neuron for each layer can't be 0.
+        if !layers.iter().all(|&x| x > 0) {
+            panic!("Invalid params, the number of neurons for each layers has to be greater than zero. Consider to change layers vector.")
+        }
+
+        // Intra connections (between neurons of same layer) parameter check.
         if layers.len() != intra_conn.len() {
             panic!(
                 "Invalid params, expected Boolean vector shape to be [{}], but got [{}] instead",
@@ -81,15 +94,15 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             }
         }
 
-        //check weights
+        // Check weights
         if let Some(ref weights) = personalized_weights {
             // Check that the number of Weights vectors it's equal to the number of layers
             if weights.len() != layers.len() {
                 panic!("Invalid params, expected Parameters vector shape to be [{}], but got [{}] instead", layers.len(), weights.len())
             }
-            //Checking Weights matrices shapes for each layer.
+            // Checking Weights matrices shapes for each layer.
             for (idx, w) in weights.iter().enumerate() {
-                //Check if the number of weights of the first layer for each neuron it's equal to the number of inputs (FC Layer)
+                // Check if the number of weights of the first layer for each neuron it's equal to the number of inputs (FC Layer)
                 if idx == 0 && (w.cols != n_inputs as usize || w.rows != layers[idx] as usize) {
                     panic!("Invalid params, expected weights shape at index {} to be [{}, {}], but got [{}, {}] instead",
                            idx ,
@@ -98,7 +111,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                            w.rows,
                            w.cols)
                 }
-                //Check if the number of weights of the idx layer for each neuron it's equal to the number of neuron of the previous layer (FC Layer)
+                // Check if the number of weights of the idx layer for each neuron it's equal to the number of neuron of the previous layer (FC Layer)
                 else if idx != 0
                     && (w.cols != layers[idx - 1] as usize || w.rows != layers[idx] as usize)
                 {
@@ -145,45 +158,33 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                         Some(ref iw) => Some(iw.clone()),
                         None => None,
                     },
-                    None => {
-                        match intra_conn[idx] {
-                            //true => Some(Snn::<N>::random_weights(*l, *l, true, seed)),
-                            true => Some(MatrixG::random(
-                                *l as usize,
-                                *l as usize,
-                                true,
-                                seed,
-                                0.01,
-                                0.99,
-                            )),
-                            false => None,
-                        }
-                    }
+                    None => match intra_conn[idx] {
+                        true => Some(MatrixG::random(
+                            *l as usize,
+                            *l as usize,
+                            true,
+                            seed,
+                            -0.99,
+                            -0.01,
+                        )),
+                        false => None,
+                    },
                 },
                 match personalized_weights {
                     Some(ref w) => w[idx].clone(),
-                    None => {
-                        match idx {
-                            //0 => Snn::<N>::random_weights(*l, n_inputs, false, seed),
-                            0 => MatrixG::random(
-                                *l as usize,
-                                n_inputs as usize,
-                                false,
-                                seed,
-                                0.01,
-                                0.99,
-                            ),
-                            //_ => Snn::<N>::random_weights(*l, layers[idx - 1], false, seed),
-                            _ => MatrixG::random(
-                                *l as usize,
-                                layers[idx - 1] as usize,
-                                false,
-                                seed,
-                                0.01,
-                                0.99,
-                            ),
+                    None => match idx {
+                        0 => {
+                            MatrixG::random(*l as usize, n_inputs as usize, false, seed, 0.01, 0.99)
                         }
-                    }
+                        _ => MatrixG::random(
+                            *l as usize,
+                            layers[idx - 1] as usize,
+                            false,
+                            seed,
+                            0.01,
+                            0.99,
+                        ),
+                    },
                 },
                 match parameters_array {
                     Some(ref pr) => pr.get(idx),
@@ -203,7 +204,13 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                 }
             }
             Some(v) => {
+                if v.len() > self.layers.len() {
+                    panic!("Invalid params, too many layers, {} requested but network has only {} layers.", v.len(), self.layers.len())
+                }
                 for idx in v {
+                    if idx > self.layers.len() {
+                        panic!("Invalid params, layer of index {} requested but network has only {} layers.", idx, self.layers.len());
+                    }
                     self.layers[idx].set_neuron_parameters(parameters);
                 }
             }
@@ -246,10 +253,10 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         layers_info
     }
 
-    //Compute the number of layers to give to each thread, to better parallelize the network
+    // Compute the number of layers to give to each thread, to better parallelize the network
     fn layer_per_thread(&mut self) -> Vec<Vec<&mut Layer<N>>> {
-        //That's because if the number of layers outnumbers the number of threads
-        //it would cause a growth in the overall overhead
+        // That's because if the number of layers outnumbers the number of threads
+        // it would cause a growth in the overall overhead
 
         let n_th = num_cpus::get();
         let count = self.layers.len() % n_th;
@@ -287,8 +294,9 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         input_matrix: &MatrixG<u8>,
         fault_configuration: Option<&FaultConfiguration<N::D>>,
         log_level: u8,
+        seed: Option<u64>,
     ) -> Vec<Vec<u8>> {
-        //Check if the input shape it's the same as defined in the network.
+        // Check if the input shape it's the same as defined in the network.
         if input_matrix.cols != self.layers[0].weights.cols {
             panic!(
                 "Invalid input, expected Input shape to be [{}, {}], but got [{}, {}] instead",
@@ -314,7 +322,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         // Getting the actual fault, if present
         let actual_fault = match fault_configuration {
             Some(f_c) => {
-                let a_f = f_c.get_actual_faults(self.get_layers_info(), input_matrix.rows);
+                let a_f = f_c.get_actual_faults(self.get_layers_info(), input_matrix.rows, seed);
                 if log_level == 1 || log_level == 3 {
                     println!("{}", a_f);
                 }
@@ -372,7 +380,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         while let Ok(value) = rx.recv() {
             let mut y = value.1;
             for l in layers.iter_mut() {
-                //Do neuron stuff here
+                // Do neuron stuff here
                 match *actual_fault {
                     Some(a_f) if (*l).id == a_f.layer_id => {
                         y = (*l).forward(&y, Some(a_f), value.0);
@@ -392,8 +400,10 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         input_matrix: &MatrixG<u8>,
         fault_configuration: &FaultConfiguration<N::D>,
         log_level: u8, // 0: only result on stdout, 1: verbose on stdout, 2: only result on file, 3: verbose on file
+        seed: Option<u64>,
     ) -> () {
-        // Check that if the required fault can be on inner weights, if inner weights are not present in any layer => error
+        // Check if, between all possible components that can fail, the inner weights component is present
+        // and if no layer has inner weights => panic
         if fault_configuration.components_contain_inner_weights()
             && self.layers.iter().all(|l| l.states_weights.is_none())
         {
@@ -429,9 +439,9 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         }
 
         for i in 0..fault_configuration.get_n_occurrences() {
-            let result = self
-                .clone()
-                .forward(input_matrix, Some(fault_configuration), log_level);
+            let result =
+                self.clone()
+                    .forward(input_matrix, Some(fault_configuration), log_level, seed);
 
             println!("Result for rep {:02}: {:?}\n", i, result);
 
