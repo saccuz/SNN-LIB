@@ -638,14 +638,14 @@ impl<N: Neuron + Clone> Layer<N> {
                             OuterComponent::Weights => match a_f.fault_type {
                                 FaultType::StuckAtZero if time == 0 => {
                                     stuck_at_zero(
-                                        &mut self.weights.data[a_f.neuron_id.0 as usize]
+                                        &mut self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize],
                                         a_f.offset,
                                     );
                                 }
                                 FaultType::StuckAtOne if time == 0 => {
                                     stuck_at_one(
-                                        &mut self.weights.data[a_f.neuron_id.0 as usize]
+                                        &mut self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize],
                                         a_f.offset,
                                     );
@@ -654,12 +654,12 @@ impl<N: Neuron + Clone> Layer<N> {
                                     if time == a_f.time_tbf.unwrap() {
                                         save = (
                                             true,
-                                            self.weights.data[a_f.neuron_id.0 as usize]
+                                            self.weights[a_f.neuron_id.0 as usize]
                                                 [a_f.neuron_id.1.unwrap() as usize]
                                                 .clone(),
                                         );
                                         bit_flip(
-                                            &mut self.weights.data[a_f.neuron_id.0 as usize]
+                                            &mut self.weights[a_f.neuron_id.0 as usize]
                                                 [a_f.neuron_id.1.unwrap() as usize],
                                             a_f.offset,
                                         );
@@ -673,13 +673,13 @@ impl<N: Neuron + Clone> Layer<N> {
                                 match a_f.fault_type {
                                     FaultType::StuckAtZero if time == 0 => {
                                         fault_iter(
-                                            &mut self.weights.data[a_f.neuron_id.0 as usize],
+                                            &mut self.weights[a_f.neuron_id.0 as usize],
                                             a_f,
                                             &stuck_at_zero,
                                         );
                                         if let Some(ref mut v) = self.states_weights {
                                             fault_iter(
-                                                &mut v.data[a_f.neuron_id.0 as usize],
+                                                &mut v[a_f.neuron_id.0 as usize],
                                                 a_f,
                                                 &stuck_at_zero,
                                             );
@@ -687,13 +687,13 @@ impl<N: Neuron + Clone> Layer<N> {
                                     }
                                     FaultType::StuckAtOne if time == 0 => {
                                         fault_iter(
-                                            &mut self.weights.data[a_f.neuron_id.0 as usize],
+                                            &mut self.weights[a_f.neuron_id.0 as usize],
                                             a_f,
                                             &stuck_at_one,
                                         );
                                         if let Some(ref mut v) = self.states_weights {
                                             fault_iter(
-                                                &mut v.data[a_f.neuron_id.0 as usize],
+                                                &mut v[a_f.neuron_id.0 as usize],
                                                 a_f,
                                                 &stuck_at_one,
                                             );
@@ -702,17 +702,17 @@ impl<N: Neuron + Clone> Layer<N> {
                                     FaultType::TransientBitFlip => {
                                         if time == a_f.time_tbf.unwrap() {
                                             saved_weights.0 =
-                                                self.weights.data[a_f.neuron_id.0 as usize].clone();
+                                                self.weights[a_f.neuron_id.0 as usize].clone();
                                             fault_iter(
-                                                &mut self.weights.data[a_f.neuron_id.0 as usize],
+                                                &mut self.weights[a_f.neuron_id.0 as usize],
                                                 a_f,
                                                 &bit_flip,
                                             );
                                             if let Some(ref mut v) = self.states_weights {
                                                 saved_weights.1 =
-                                                    v.data[a_f.neuron_id.0 as usize].clone();
+                                                    v[a_f.neuron_id.0 as usize].clone();
                                                 fault_iter(
-                                                    &mut v.data[a_f.neuron_id.0 as usize],
+                                                    &mut v[a_f.neuron_id.0 as usize],
                                                     a_f,
                                                     &bit_flip,
                                                 );
@@ -727,14 +727,14 @@ impl<N: Neuron + Clone> Layer<N> {
                                 Some(ref mut sw) => match a_f.fault_type {
                                     FaultType::StuckAtZero if time == 0 => {
                                         stuck_at_zero(
-                                            &mut sw.data[a_f.neuron_id.0 as usize]
+                                            &mut sw[a_f.neuron_id.0 as usize]
                                                 [a_f.neuron_id.1.unwrap() as usize],
                                             a_f.offset,
                                         );
                                     }
                                     FaultType::StuckAtOne if time == 0 => {
                                         stuck_at_one(
-                                            &mut sw.data[a_f.neuron_id.0 as usize]
+                                            &mut sw[a_f.neuron_id.0 as usize]
                                                 [a_f.neuron_id.1.unwrap() as usize],
                                             a_f.offset,
                                         );
@@ -743,12 +743,12 @@ impl<N: Neuron + Clone> Layer<N> {
                                         if time == a_f.time_tbf.unwrap() {
                                             save = (
                                                 false,
-                                                sw.data[a_f.neuron_id.0 as usize]
+                                                sw[a_f.neuron_id.0 as usize]
                                                     [a_f.neuron_id.1.unwrap() as usize]
                                                     .clone(),
                                             );
                                             bit_flip(
-                                                &mut sw.data[a_f.neuron_id.0 as usize]
+                                                &mut sw[a_f.neuron_id.0 as usize]
                                                     [a_f.neuron_id.1.unwrap() as usize],
                                                 a_f.offset,
                                             );
@@ -773,18 +773,18 @@ impl<N: Neuron + Clone> Layer<N> {
                             FaultType::TransientBitFlip if a_f.time_tbf.unwrap() == time => {
                                 if a_f.bus.is_none() {
                                     if save.0 {
-                                        self.weights.data[a_f.neuron_id.0 as usize]
+                                        self.weights[a_f.neuron_id.0 as usize]
                                             [a_f.neuron_id.1.unwrap() as usize] = save.1
                                     } else {
                                         if let Some(ref mut v) = self.states_weights {
-                                            v.data[a_f.neuron_id.0 as usize]
+                                            v[a_f.neuron_id.0 as usize]
                                                 [a_f.neuron_id.1.unwrap() as usize] = save.1
                                         }
                                     }
                                 } else {
-                                    self.weights.data[a_f.neuron_id.0 as usize] = saved_weights.0;
+                                    self.weights[a_f.neuron_id.0 as usize] = saved_weights.0;
                                     if let Some(ref mut v) = self.states_weights {
-                                        v.data[a_f.neuron_id.0 as usize] = saved_weights.1;
+                                        v[a_f.neuron_id.0 as usize] = saved_weights.1;
                                     }
                                 }
                             }
