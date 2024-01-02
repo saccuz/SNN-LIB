@@ -113,7 +113,7 @@ impl Neuron for LifNeuron {
                     r_type: ResetMode::Zero,
                     t_s_last: 0.0,
                     tau: p.tau,
-                    time_step: 1e-1,
+                    time_step: 1e-3,
                     broken: false,
                 }
             }
@@ -125,7 +125,7 @@ impl Neuron for LifNeuron {
                 r_type: ResetMode::Zero,
                 t_s_last: 0.0,
                 tau: 5e-3, // 5ms it's a realistic biological neuron value for R=50MΩ  and C=100pF
-                time_step: 1e-1, // We fix a time step for every call of the forward.
+                time_step: 1e-3, // We fix a time step for every call of the forward.
                 broken: false,
             },
         }
