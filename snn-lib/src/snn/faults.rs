@@ -100,7 +100,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
     }
 
     // Compute all the random choices to configure the actual fault to apply to the current fault emulation
-    pub fn get_actual_faults(
+    pub fn get_actual_fault(
         &self,
         layers_info: Vec<(usize, bool)>,
         total_time: usize,

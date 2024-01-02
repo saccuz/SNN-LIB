@@ -19,6 +19,108 @@
 ## Description
 This repository contains a Rust library for the study of the resilience of a Spiking Neural Network in terms of hardware faults that can happen during inference.
 
+### Hardware Simulation
+This library emulates a physical implementation of a Spiking Neural Network. The simulation is based on a few assumptions:
+- The Neural Network works with 64bit weights, so it's not intended to be used with quantized networks.
+- Each neuron is physically mapped, so we assume that each neuron has its own process unit (with pre-defined components: i.e: Adder, Multiplier, etc...) and its own associated memory which contains the internal information of the neuron (i.e: membrane value, threshold value, etc...)
+- Layers weights and inner weights are stored in a specific memory area (we suppose main memory) and are transferred through "n" buses (where n is specified in the fault simulation) that can transfer a whole weight. The previous assumption means that if with 64 bits weights, buses will be 64 bits. 
+ 
+## Main structures
+
+### Snn
+Snn is the main structure that contains the whole network, made as an array of Layers of a generic type `N` that represents the neuron type.
+
+```rust
+pub struct Snn<N: Neuron> {
+layers: Vec<Layer<N>>,
+}
+```
+
+### Layer
+Each layer has an id, an array of neurons, the output of the layer at the previous instant (`states`), weights relative to the connections between the previous layer and this one, 
+weights of connections between neurons of the same layer (`states_weights`).
+
+```rust
+pub struct Layer<N: Neuron> {
+    id: u32,
+    neurons: Vec<N>,
+    states: Vec<u8>,
+    weights: MatrixG<f64>,
+    states_weights: Option<MatrixG<f64>>,
+}
+```
+
+### LifNeuron
+The LifNeuron is a specific neuron implementation of the generic trait `Neuron`. \
+It has an id, a membrane voltage value, a resting potential, a voltage threshold to evaluate when the neuron spikes, a reset mode to specify how the membrane voltage value will be reset after a spike, a time accumulator of time steps to 
+keep track of time passing, the time constant tau, the time step size and an information about the neuron to be broken or not (because some faults have to be applied just once
+at the first forward call).
+
+```rust
+pub struct LifNeuron {
+    id: u32,
+    v_mem: f64,
+    v_rest: f64,
+    v_th: f64,
+    r_type: ResetMode,
+    t_s_last: f64, // time from last spike of the neuron -> t_s_last = t - t_last
+    tau: f64,
+    time_step: f64,
+    broken: bool,
+}
+```
+
+### FaultConfiguration
+The FaultConfiguration structure is the one given by the user to tell which faults should be applied, with which characteristics and how many times the fault emulation have to be done.
+
+```rust
+pub struct FaultConfiguration<D: SpecificComponent + Clone + Debug> {
+    components: Vec<Component<D>>,
+    n_bus: usize,
+    fault_type: FaultType,
+    n_occurrences: u32,
+}
+```
+
+## Main methods
+### Emulate fault
+The emulate fault function takes the input matrix as input, the fault configuration given by the user, the desired [log level](#log-level-setting) 
+and an optional seed for the random generation of the actual faults (decide which layer to break, which neuron, etc...). 
+
+```rust
+fn emulate_fault(&mut self, input_matrix: &MatrixG<u8>, fault_configuration: &FaultConfiguration<N::D>, log_level: u8, seed: Option<u64>) -> ()
+```
+
+### Forward (Snn)
+The forward function of the SNN takes the same arguments as the [emulate fault](#emulate-fault).
+Creates the channels for thread communication, to make the snn working as a pipeline. 
+The actual fault is generated here and is given to the forward function of the layer
+involved in the fault. \
+Layers are distributed between threads, to use the maximum number of threads with the minimum possible overhead.
+
+```rust
+fn forward(&mut self, input_matrix: &MatrixG<u8>, fault_configuration: Option<&FaultConfiguration<N::D>>, log_level: u8, seed: Option<u64>) -> Vec<Vec<u8>>
+```
+
+### Forward (Layer)
+The Layer struct has its own forward function. It takes as arguments the vector of inputs (for the layers after the first one it's the output of the previous layer), 
+the specific fault for that specific occurrence and, finally, time: since it is a spike snn, the input of the snn is mapped with shape (time, features). In our case, time is needed to
+know when the fault has to be applied.
+
+```rust
+fn forward(&mut self, inputs: &Vec<u8>, actual_faults: Option<&ActualFault<N::D>>, time: usize) -> Vec<u8>
+```
+### Forward (LifNeuron)
+The forward of the LifNeuron it's just an implementation of the forward in Trait `Neuron`.
+Inside it's a scalar product between input, weights and, if present, internal weights (`state_weights`). \
+`actual_fault` contains information about possible fault happening to the internal components of the neuron.
+The other parameters used for the neuron internal computation are stored within the neuron.
+
+```rust
+fn forward(&mut self, input: &Vec<u8>, states_weights: &Option<MatrixG<f64>>, weights: &MatrixG<f64>, states: &Vec<u8>, actual_fault: Option<&ActualFault<LifSpecificComponent>>) -> u8 
+```
+
+
 ## Network parameters setting
 ### Seed setting
 To reproduce a certain behavior or check the difference of outputs with a specific network setting, 

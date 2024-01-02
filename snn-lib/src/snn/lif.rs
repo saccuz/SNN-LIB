@@ -162,13 +162,19 @@ impl Neuron for LifNeuron {
     ) -> u8 {
         self.t_s_last += self.time_step;
 
-        // Stop neuron execution if no spike is present in input
+        // Stop neuron execution if no spike is present in input, to make the whole thing "event based",
+        // actual calculations are made only when a spike is received.
+        // We could also have moved this logic inside the layer and avoid calling the forward function at all
+        // if no input spike is present, but to maintain neurons' data consistent during the execution, and
+        // also to guarantee generalization (maybe another kind of neuron does something in the forward even
+        // when all inputs are 0) we decided to keep it here.
         if input.iter().all(|x| *x == 0) {
             return 0;
         }
 
         let mut ops = vec![false; 7];
 
+        // To avoid a great number of repetition of this match
         if let Some(a_f) = actual_fault {
             if let Component::Inside(real_comp) = &a_f.component {
                 match real_comp {
