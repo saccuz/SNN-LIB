@@ -1,9 +1,6 @@
 
 # Cose da fare
-- Refactoring and commenting (vedere se si può ottimizzare qualcosa)
-- Fare test abbondanti per controllare che tutto funzioni effettivamente bene
-- Vogliamo spezzettare snn.rs in layer.rs and snn.rs? (problemi di pub...)
-- Ristrutturare lib e mod correttamente (serve davvero lib.rs?)
+- Fare test abbondanti per controllare che tutto funzioni effettivamente bene [Mandare email]
 - Readme [ongoing]
 
 # Cose carine

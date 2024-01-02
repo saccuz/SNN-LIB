@@ -1,9 +1,9 @@
-mod snn;
+extern crate snn_lib;
 
-use crate::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponent};
-use crate::snn::generic_matrix::MatrixG;
-use crate::snn::lif::{LifNeuron, LifNeuronParameters, LifSpecificComponent, ResetMode};
-use crate::snn::snn::Snn;
+use snn_lib::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponent};
+use snn_lib::snn::generic_matrix::MatrixG;
+use snn_lib::snn::lif::{LifNeuron, LifNeuronParameters, LifSpecificComponent, ResetMode};
+use snn_lib::snn::snn::Snn;
 
 fn main() {
     // Set the seed for input matrix, weights, and inner weights
@@ -63,11 +63,23 @@ fn main() {
         n_inputs as u32,
         layers,
         layers_inner_connections,
-        Some(neuron_parameters_per_layer),
+        Some(neuron_parameters_per_layer.clone()),
         Some(personalized_weights),
         Some(personalized_inner_weights),
         seed,
     );
+
+    //Testing snn utility functions.
+    //WORKING!
+    //snn.set_neuron_parameters(&(neuron_parameters_per_layer[0].clone()), None);
+    //snn.set_neuron_parameters(&neuron_parameters_per_layer[0], Some(vec![1usize]));
+    //println!("{:?}", snn.get_neuron_parameters(0,0));
+    //println!("{:?}", snn.get_layer_weights(0));
+    //println!("{:?}", snn.get_layer_states_weights(0));
+    //snn.set_layer_states_weights(Some(MatrixG::<f64>::zeroes(20,20)), 0);
+    //println!("{:?}", snn.get_layer_states_weights(0));
+    //snn.set_layer_weights(MatrixG::<f64>::zeroes(20,10), 0);
+    //println!("{:?}", snn.get_layer_weights(0));
 
     // Fault injection
     let fault_configuration = FaultConfiguration::new(

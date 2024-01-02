@@ -3,14 +3,14 @@ use crate::snn::generic_matrix::MatrixG;
 use crate::snn::neuron::NeuronParameters;
 use crate::snn::neuron::{Neuron, SpecificComponent};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub enum ResetMode {
     Zero,
     RestingPotential,
     SubThreshold,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LifNeuronParameters {
     pub v_rest: f64,
     pub v_th: f64,

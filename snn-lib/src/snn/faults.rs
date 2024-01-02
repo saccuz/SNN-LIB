@@ -1,5 +1,6 @@
 use crate::snn::lif::LifSpecificComponent;
 use crate::snn::neuron::SpecificComponent;
+
 use rand::seq::SliceRandom;
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use std::fmt::Debug;
@@ -79,7 +80,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         }
     }
 
-    // Check if between faultable components there is "inner_weights"
+    // Check if between fallible components there is "inner_weights"
     pub fn components_contain_inner_weights(&self) -> bool {
         let mut ret = false;
         for comp in self.components.iter() {

@@ -1,9 +1,8 @@
-use crate::snn::faults::{
-    bit_flip, fault_iter, stuck_at_one, stuck_at_zero, ActualFault, Component, FaultConfiguration,
-    FaultType, OuterComponent,
-};
+use crate::snn::faults::{ActualFault, FaultConfiguration};
 use crate::snn::generic_matrix::MatrixG;
+use crate::snn::layer::Layer;
 use crate::snn::neuron::Neuron;
+
 use chrono::{Datelike, Local, Timelike};
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use gag::Redirect;
@@ -221,34 +220,27 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         self.layers[l_idx].set_weights(weights)
     }
 
-    pub fn set_layer_inner_weights(&mut self, inner_weights: MatrixG<f64>, l_idx: usize) {
-        self.layers[l_idx].set_inner_weights(inner_weights)
+    pub fn set_layer_states_weights(&mut self, inner_weights: Option<MatrixG<f64>>, l_idx: usize) {
+        self.layers[l_idx].set_states_weights(inner_weights)
     }
 
-    pub fn get_neuron_parameters(&mut self, l_idx: usize, n_idx: usize) -> N::T {
+    pub fn get_neuron_parameters(&self, l_idx: usize, n_idx: usize) -> N::T {
         self.layers[l_idx].get_neuron_parameters(n_idx)
     }
 
-    pub fn get_layer_weights(&mut self, l_idx: usize) -> &MatrixG<f64> {
+    pub fn get_layer_weights(&self, l_idx: usize) -> &MatrixG<f64> {
         self.layers[l_idx].get_weights()
     }
 
-    pub fn get_layer_inner_weights(&mut self, l_idx: usize) -> &Option<MatrixG<f64>> {
-        self.layers[l_idx].get_inner_weights()
+    pub fn get_layer_states_weights(&self, l_idx: usize) -> &Option<MatrixG<f64>> {
+        self.layers[l_idx].get_states_weights()
     }
 
     // Returns the number of neurons and the presence/absence of inner weights for each layer.
     fn get_layers_info(&self) -> Vec<(usize, bool)> {
         let mut layers_info = Vec::new();
         for l in self.layers.iter() {
-            layers_info.push((
-                l.neurons.len(),
-                if l.states_weights.is_none() {
-                    false
-                } else {
-                    true
-                },
-            ));
+            layers_info.push((l.get_n_neurons(), l.has_states_weights()));
         }
         layers_info
     }
@@ -297,11 +289,11 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         seed: Option<u64>,
     ) -> Vec<Vec<u8>> {
         // Check if the input shape it's the same as defined in the network.
-        if input_matrix.cols != self.layers[0].weights.cols {
+        if input_matrix.cols != self.layers[0].get_weights().cols {
             panic!(
                 "Invalid input, expected Input shape to be [{}, {}], but got [{}, {}] instead",
                 input_matrix.rows,
-                self.layers[0].weights.cols,
+                self.layers[0].get_weights().cols,
                 input_matrix.rows,
                 input_matrix.cols
             )
@@ -322,7 +314,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         // Getting the actual fault, if present
         let actual_fault = match fault_configuration {
             Some(f_c) => {
-                let a_f = f_c.get_actual_faults(self.get_layers_info(), input_matrix.rows, seed);
+                let a_f = f_c.get_actual_fault(self.get_layers_info(), input_matrix.rows, seed);
                 if log_level == 1 || log_level == 3 {
                     println!("{}", a_f);
                 }
@@ -382,7 +374,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             for l in layers.iter_mut() {
                 // Do neuron stuff here
                 match *actual_fault {
-                    Some(a_f) if (*l).id == a_f.layer_id => {
+                    Some(a_f) if (*l).get_id() == a_f.layer_id => {
                         y = (*l).forward(&y, Some(a_f), value.0);
                     }
                     _ => {
@@ -405,7 +397,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         // Check if, between all possible components that can fail, the inner weights component is present
         // and if no layer has inner weights => panic
         if fault_configuration.components_contain_inner_weights()
-            && self.layers.iter().all(|l| l.states_weights.is_none())
+            && self.layers.iter().all(|l| l.get_states_weights().is_none())
         {
             panic!("Invalid component for fault configurations: if Inner Weights is selected, be sure to initialize it in the Snn model.")
         }
@@ -414,7 +406,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         let saved_w = self
             .layers
             .iter()
-            .map(|x| (x.weights.clone(), x.states_weights.clone()))
+            .map(|x| (x.get_weights().clone(), x.get_states_weights().clone()))
             .collect::<Vec<(MatrixG<f64>, Option<MatrixG<f64>>)>>();
 
         let mut _print_redirect;
@@ -447,39 +439,11 @@ impl<N: Neuron + Clone + Send> Snn<N> {
 
             // Restore original weights
             for (idx, l) in self.layers.iter_mut().enumerate() {
-                l.weights = saved_w[idx].0.clone();
-                l.states_weights = saved_w[idx].1.clone();
+                l.set_weights(saved_w[idx].0.clone());
+                l.set_states_weights(saved_w[idx].1.clone());
             }
         }
     }
-
-    // Generates random weights matrix
-    /* fn random_weights(h: u32, w: u32, diag: bool, seed: Option<u64>) -> Vec<Vec<f64>> {
-        // If a seed is given, it is set for the PRNG, otherwise it
-        let mut rng = match seed {
-            Some(s) => StdRng::seed_from_u64(s),
-            None => StdRng::from_entropy()
-        };
-
-        let mut weights = Vec::<Vec<f64>>::new();
-        for r in 0..h {
-            let mut row = Vec::<f64>::new();
-            for c in 0..w {
-                let rnd_number = rng.gen_range(0.01..1.0);
-                if diag {
-                    if r == c {
-                        row.push(0.0);
-                    } else {
-                        row.push(-rnd_number);
-                    }
-                } else {
-                    row.push(rnd_number);
-                }
-            }
-            weights.push(row);
-        }
-        weights
-    } */
 }
 
 impl<N: Neuron> From<Vec<Layer<N>>> for Snn<N> {
@@ -497,306 +461,8 @@ impl<N: Neuron> Display for Snn<N> {
         );
         _ = write!(f, "|{:-<18}|{:-<18}|{:-<18}|{:-<18}|\n", "", "", "", "");
         for layer in &self.layers {
-            _ = write!(
-                f,
-                "| {:<16} | {:<16} | {:<16} | {:<16} |\n",
-                layer.id,
-                layer.neurons.len(),
-                layer.weights.rows * layer.weights.cols,
-                match &layer.states_weights {
-                    Some(a) => a.rows * a.rows - a.rows,
-                    None => 0,
-                }
-            );
+            _ = write!(f, "{}", layer);
         }
         Ok(())
-    }
-}
-
-#[derive(Clone)]
-struct Layer<N: Neuron> {
-    id: u32,
-    neurons: Vec<N>,
-    states: Vec<u8>,
-    states_weights: Option<MatrixG<f64>>,
-    weights: MatrixG<f64>,
-}
-
-impl<N: Neuron + Clone> Layer<N> {
-    fn new(
-        id: u32,
-        neurons: u32,
-        states_weights: Option<MatrixG<f64>>,
-        weights: MatrixG<f64>,
-        parameters: Option<&N::T>,
-    ) -> Self {
-        let mut neurons_vec = Vec::<N>::new();
-        for i in 0..neurons {
-            neurons_vec.push(N::new(i, parameters));
-        }
-        Layer {
-            id,
-            neurons: neurons_vec,
-            states: vec![0; neurons as usize],
-            states_weights,
-            weights,
-        }
-    }
-
-    //################# Utility Functions ##################
-    fn set_neuron_parameters(&mut self, parameters: &N::T) {
-        for n in self.neurons.iter_mut() {
-            n.set_parameters(parameters);
-        }
-    }
-
-    fn get_neuron_parameters(&mut self, idx: usize) -> N::T {
-        return self.neurons[idx].get_parameters();
-    }
-
-    fn set_weights(&mut self, weights: MatrixG<f64>) {
-        if weights.rows != self.weights.rows || weights.cols != self.weights.cols {
-            panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
-                self.weights.rows,
-                self.weights.cols,
-                weights.rows,
-                weights.cols,
-            )
-        }
-
-        self.weights = weights;
-    }
-
-    fn get_weights(&mut self) -> &MatrixG<f64> {
-        return &self.weights;
-    }
-
-    fn set_inner_weights(&mut self, weights: MatrixG<f64>) {
-        if weights.rows != self.neurons.len() || weights.cols != self.neurons.len() {
-            panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
-                   self.neurons.len(),
-                   self.neurons.len(),
-                   weights.rows,
-                   weights.cols,
-            )
-        }
-
-        self.states_weights = Some(weights);
-    }
-
-    fn get_inner_weights(&mut self) -> &Option<MatrixG<f64>> {
-        return &self.states_weights;
-    }
-    //#########################################################
-
-    fn forward(
-        &mut self,
-        inputs: &Vec<u8>,
-        actual_faults: Option<&ActualFault<N::D>>,
-        time: usize,
-    ) -> Vec<u8> {
-        let mut spikes = Vec::<u8>::new();
-
-        match actual_faults {
-            None => {
-                for n in self.neurons.iter_mut() {
-                    spikes.push(n.forward(
-                        &inputs,
-                        &self.states_weights,
-                        &self.weights,
-                        &self.states,
-                        None,
-                    ));
-                }
-            }
-            Some(a_f) => {
-                match a_f.component {
-                    Component::Inside(_) => {
-                        let fault = match a_f.fault_type {
-                            FaultType::TransientBitFlip if a_f.time_tbf.unwrap() != time => None,
-                            _ => actual_faults,
-                        };
-                        for n in self.neurons.iter_mut() {
-                            spikes.push(n.forward(
-                                &inputs,
-                                &self.states_weights,
-                                &self.weights,
-                                &self.states,
-                                if a_f.neuron_id.0 == n.get_id() {
-                                    fault
-                                } else {
-                                    None
-                                },
-                            ));
-                        }
-                    }
-                    Component::Outside(ref c) => {
-                        // true is for weights, false is for states_weights
-                        let mut save = (true, 0.0);
-                        let mut saved_weights = (Vec::<f64>::new(), Vec::<f64>::new());
-                        match c {
-                            OuterComponent::Weights => match a_f.fault_type {
-                                FaultType::StuckAtZero if time == 0 => {
-                                    stuck_at_zero(
-                                        &mut self.weights[a_f.neuron_id.0 as usize]
-                                            [a_f.neuron_id.1.unwrap() as usize],
-                                        a_f.offset,
-                                    );
-                                }
-                                FaultType::StuckAtOne if time == 0 => {
-                                    stuck_at_one(
-                                        &mut self.weights[a_f.neuron_id.0 as usize]
-                                            [a_f.neuron_id.1.unwrap() as usize],
-                                        a_f.offset,
-                                    );
-                                }
-                                FaultType::TransientBitFlip => {
-                                    if time == a_f.time_tbf.unwrap() {
-                                        save = (
-                                            true,
-                                            self.weights[a_f.neuron_id.0 as usize]
-                                                [a_f.neuron_id.1.unwrap() as usize]
-                                                .clone(),
-                                        );
-                                        bit_flip(
-                                            &mut self.weights[a_f.neuron_id.0 as usize]
-                                                [a_f.neuron_id.1.unwrap() as usize],
-                                            a_f.offset,
-                                        );
-                                    }
-                                }
-                                _ => { /* in if time != 0 we don't need to apply Stuck At-X because it was already applied */
-                                }
-                            },
-                            OuterComponent::Connections => {
-                                //##### We suppose that both weights and internal weights are passed through the same buses ######//
-                                match a_f.fault_type {
-                                    FaultType::StuckAtZero if time == 0 => {
-                                        fault_iter(
-                                            &mut self.weights[a_f.neuron_id.0 as usize],
-                                            a_f,
-                                            &stuck_at_zero,
-                                        );
-                                        if let Some(ref mut v) = self.states_weights {
-                                            fault_iter(
-                                                &mut v[a_f.neuron_id.0 as usize],
-                                                a_f,
-                                                &stuck_at_zero,
-                                            );
-                                        }
-                                    }
-                                    FaultType::StuckAtOne if time == 0 => {
-                                        fault_iter(
-                                            &mut self.weights[a_f.neuron_id.0 as usize],
-                                            a_f,
-                                            &stuck_at_one,
-                                        );
-                                        if let Some(ref mut v) = self.states_weights {
-                                            fault_iter(
-                                                &mut v[a_f.neuron_id.0 as usize],
-                                                a_f,
-                                                &stuck_at_one,
-                                            );
-                                        }
-                                    }
-                                    FaultType::TransientBitFlip => {
-                                        if time == a_f.time_tbf.unwrap() {
-                                            saved_weights.0 =
-                                                self.weights[a_f.neuron_id.0 as usize].clone();
-                                            fault_iter(
-                                                &mut self.weights[a_f.neuron_id.0 as usize],
-                                                a_f,
-                                                &bit_flip,
-                                            );
-                                            if let Some(ref mut v) = self.states_weights {
-                                                saved_weights.1 =
-                                                    v[a_f.neuron_id.0 as usize].clone();
-                                                fault_iter(
-                                                    &mut v[a_f.neuron_id.0 as usize],
-                                                    a_f,
-                                                    &bit_flip,
-                                                );
-                                            }
-                                        }
-                                    }
-                                    _ => { /* in if time != 0 we don't need to apply Stuck At-X because it was already applied */
-                                    }
-                                }
-                            }
-                            OuterComponent::InnerWeights => match self.states_weights {
-                                Some(ref mut sw) => match a_f.fault_type {
-                                    FaultType::StuckAtZero if time == 0 => {
-                                        stuck_at_zero(
-                                            &mut sw[a_f.neuron_id.0 as usize]
-                                                [a_f.neuron_id.1.unwrap() as usize],
-                                            a_f.offset,
-                                        );
-                                    }
-                                    FaultType::StuckAtOne if time == 0 => {
-                                        stuck_at_one(
-                                            &mut sw[a_f.neuron_id.0 as usize]
-                                                [a_f.neuron_id.1.unwrap() as usize],
-                                            a_f.offset,
-                                        );
-                                    }
-                                    FaultType::TransientBitFlip => {
-                                        if time == a_f.time_tbf.unwrap() {
-                                            save = (
-                                                false,
-                                                sw[a_f.neuron_id.0 as usize]
-                                                    [a_f.neuron_id.1.unwrap() as usize]
-                                                    .clone(),
-                                            );
-                                            bit_flip(
-                                                &mut sw[a_f.neuron_id.0 as usize]
-                                                    [a_f.neuron_id.1.unwrap() as usize],
-                                                a_f.offset,
-                                            );
-                                        }
-                                    }
-                                    _ => { /* in if time != 0 we don't need to apply Stuck At-X because it was already applied */
-                                    }
-                                },
-                                None => {}
-                            },
-                        }
-                        for n in self.neurons.iter_mut() {
-                            spikes.push(n.forward(
-                                &inputs,
-                                &self.states_weights,
-                                &self.weights,
-                                &self.states,
-                                None,
-                            ));
-                        }
-                        match a_f.fault_type {
-                            FaultType::TransientBitFlip if a_f.time_tbf.unwrap() == time => {
-                                if a_f.bus.is_none() {
-                                    if save.0 {
-                                        self.weights[a_f.neuron_id.0 as usize]
-                                            [a_f.neuron_id.1.unwrap() as usize] = save.1
-                                    } else {
-                                        if let Some(ref mut v) = self.states_weights {
-                                            v[a_f.neuron_id.0 as usize]
-                                                [a_f.neuron_id.1.unwrap() as usize] = save.1
-                                        }
-                                    }
-                                } else {
-                                    self.weights[a_f.neuron_id.0 as usize] = saved_weights.0;
-                                    if let Some(ref mut v) = self.states_weights {
-                                        v[a_f.neuron_id.0 as usize] = saved_weights.1;
-                                    }
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                }
-            }
-        }
-
-        self.states = spikes.clone();
-
-        spikes
     }
 }

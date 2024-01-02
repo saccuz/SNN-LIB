@@ -3,16 +3,15 @@
 # Spiking Neural Network + Resilience Library
 ## snn-lib
 
-- [Group45](#group45)
+- [Members](#members)
 - [Description](#description)
-- [Framework](#framework)
-- [Main structs](#main-structures)
+- [Main structures](#main-structures)
 - [Main methods](#main-methods)
 - [Network parameters setting](#network-parameters-setting)
 - [Usage examples](#usage-examples)
 - [Licence](#licence)
 
-## Group45
+## Members
 - Francesco Sorrentino (s301665)
 - Marco Sacchet (s295033)
 - Simone Mascali (s305001)
@@ -22,15 +21,15 @@ This repository contains a Rust library for the study of the resilience of a Spi
 
 ## Network parameters setting
 ### Seed setting
-If you want to reproduce a certain behavior or check the difference of outputs with a specific network setting, 
-you can set a specific seed and pass it to the proper function for the random generations used inside the network parameters setting.\
-You can set the seed for the generation of: input matrix, weights and inner weights.\
-Note that it should be an ```Option<u64>```, if None is given then the default setting for the PRNG (Pseudo Random Number Generator) is used.
+To reproduce a certain behavior or check the difference of outputs with a specific network setting, 
+a specific seed can be set and passed to the proper function for the random generations used inside the network parameters setting.\
+The seed can be set for the generation of: input matrix, weights and inner weights.\
+Note that it should be an `Option<u64>`, if None is given then the default setting for the PRNG (Pseudo Random Number Generator) is used.
 
 ```rust
 // Set the seed for input matrix, weights, and inner weights 
 let seed = Some(21);
-...
+// ...
 // Passing the seed here set that seed for the input matrix generation
 let input_matrix = MatrixG::random(rows, cols, false, seed, 0, 1);
 // AND/OR
@@ -39,7 +38,7 @@ let mut snn = Snn::<LifNeuron>::new(..., seed);
 ```
 
 ### Log level setting
-You can set the log level by setting this value:
+Log level can be selected between these values:
 - 0: print only the results of emulation on `stdout`, without any details about the network's structure or the injected faults
 - 1: print on `stdout` network structure, requested injected fault, input matrix and the applied fault for every result.
 - 2: print only the results of emulation on a log file, without any details about the network's structure or the injected faults
@@ -50,8 +49,8 @@ let log_level = 0;
 ```
 
 ### Basic configuration of the SNN
-You must set the ```n_inputs``` as the number of neurons in the input layer, ```layers``` vector as vector of neurons per inner layer, and ```layers_inner_connection``` as parallel information about each layer:
-```true``` if inner connections are present, ```false``` otherwise.
+You must set the `n_inputs` as the number of neurons in the input layer, `layers` vector as vector of neurons per inner layer, and `layers_inner_connection` as parallel information about each layer:
+`true` if inner connections are present, `false` otherwise.
 ```rust
 // Configuring the Snn
 let n_inputs: usize = 20;
@@ -60,23 +59,23 @@ let layers_inner_connections = vec![true, false, true, true];
 ```
 
 ### Weights setting
-If you want to set specific weights for the network you can create a ```Vec<MatrixG>```.\
-You must build each MatrixG using ```MatrixG::from(Vec<Vec<T>>```) where ```vec[i][j]``` represents the weight connection between neuron i of layer n and neuron j of layer n-1.
+If you want to set specific weights for the network you can create a `Vec<MatrixG>`.\
+You must build each MatrixG using `MatrixG::from(Vec<Vec<T>>`) where `vec[i][j]` represents the weight connection between neuron i of layer n and neuron j of layer n-1.
 ```rust
 let mut personalized_weights = Vec::new();
 personalized_weights.push(MatrixG::from(vec![vec![...], vec![...], ...]));
-...
+// ...
 let mut snn = Snn::<LifNeuron>::new(..., Some(personalized_weights), ...);
 ```
 
 ### Inner weights setting
-If you want to set specific inner weights for the network you can create a ```Vec<MatrixG>```.\
-You must build each MatrixG using ```MatrixG::from(Vec<Vec<T>>```) where ```vec[i][j]``` represents the inner weight connection between neuron i and neuron j of the same layer,
+If you want to set specific inner weights for the network you can create a `Vec<MatrixG>`.\
+You must build each MatrixG using `MatrixG::from(Vec<Vec<T>>`) where `vec[i][j]` represents the inner weight connection between neuron i and neuron j of the same layer,
 the matrix is a square matrix and the diagonal should be 0 otherwise it would represent the inner weights of a neuron with itself.
 ```rust
 let mut personalized_inner_weights = Vec::new();
 personalized_inner_weights.push(MatrixG::from(vec![vec![...], vec![...], ...]));
-...
+// ...
 let mut snn = Snn::<LifNeuron>::new(..., Some(personalized_inner_weights), ...);
 ```
 
@@ -138,7 +137,8 @@ let fault_configuration = FaultConfiguration::new(
 ```
 
 ## Usage examples
-See ```main.rs``` file for a complete example of usage.\
+**See `bin/example.rs` for a complete example of usage.**
+
 To create a SNN configured with all parameters explained before:
 
 ```rust
@@ -178,8 +178,6 @@ let fault_configuration = FaultConfiguration::new(
 // To start the n_occurrences faults emulations
 snn.emulate_fault(&input_matrix, &fault_configuration, 1);
 ```
-
-###
 
 ## Licence
 Released under MIT Licence.\

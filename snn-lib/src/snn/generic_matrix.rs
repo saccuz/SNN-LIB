@@ -13,7 +13,7 @@ pub struct MatrixG<T: Default + Clone + Copy + SampleUniform + PartialOrd + Disp
 
 impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> MatrixG<T> {
     // Return a matrix of all zeroes (or the default value of T)
-    fn zeroes(rows: usize, cols: usize) -> MatrixG<T> {
+    pub fn zeroes(rows: usize, cols: usize) -> MatrixG<T> {
         MatrixG {
             rows,
             cols,
