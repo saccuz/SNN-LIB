@@ -446,7 +446,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
     }
 }
 
-impl<N: Neuron> From<Vec<Layer<N>>> for Snn<N> {
+impl<N: Neuron + Clone> From<Vec<Layer<N>>> for Snn<N> {
     fn from(layers_vec: Vec<Layer<N>>) -> Self {
         for (i,v) in layers_vec.iter().enumerate() {
             if let Some(ref weights) = v.get_states_weights() {

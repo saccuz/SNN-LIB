@@ -110,7 +110,7 @@ impl Neuron for LifNeuron {
                     v_mem: 0.0,
                     v_rest: p.v_rest,
                     v_th: p.v_th,
-                    r_type: ResetMode::Zero,
+                    r_type: p.r_type,
                     t_s_last: 0.0,
                     tau: p.tau,
                     time_step: 1e-3,
