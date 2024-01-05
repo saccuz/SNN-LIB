@@ -1,7 +1,9 @@
 
 # Cose da fare
-- Fare test abbondanti per controllare che tutto funzioni effettivamente bene [Mandare email]
+- Fare test
 - Readme [ongoing]
+- Report (? o basta il readme?)
+- presentazione powerpoint????????
 
 # Cose carine
 - Identificare i cambiamenti negli output della rete per ogni iterazione della simulazione (salvare i risultati ?)

@@ -78,8 +78,8 @@ impl<N: Neuron + Clone> Layer<N> {
         return &self.weights;
     }
 
-    pub fn set_states_weights(&mut self, weight: Option<MatrixG<f64>>) {
-        if let Some(ref weights) = &weight {
+    pub fn set_states_weights(&mut self, weights: Option<MatrixG<f64>>) {
+        if let Some(ref weights) = &weights {
             if weights.rows != self.neurons.len() || weights.cols != self.neurons.len() {
                 panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
                        self.neurons.len(),
@@ -89,7 +89,7 @@ impl<N: Neuron + Clone> Layer<N> {
                 )
             }
         }
-        self.states_weights = weight;
+        self.states_weights = weights;
     }
 
     pub fn get_states_weights(&self) -> &Option<MatrixG<f64>> {
@@ -327,3 +327,4 @@ impl<N: Neuron> Display for Layer<N> {
         )
     }
 }
+
