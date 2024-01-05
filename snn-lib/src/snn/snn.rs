@@ -448,6 +448,30 @@ impl<N: Neuron + Clone + Send> Snn<N> {
 
 impl<N: Neuron> From<Vec<Layer<N>>> for Snn<N> {
     fn from(layers_vec: Vec<Layer<N>>) -> Self {
+        for (i,v) in layers_vec.iter().enumerate() {
+            if let Some(ref weights) = v.get_states_weights() {
+                if v.get_weights().rows != weights.cols && v.get_weights().rows != weights.rows {
+                    panic!("Invalid param in layer {}, found {} neurons but got inner weights matrix shape  [{}, {}] instead ",
+                           i,
+                           v.get_weights().rows,
+                           weights.rows,
+                           weights.cols
+                    )
+                }
+            }
+            if i == 0{
+                continue
+            }
+            else if v.get_weights().cols != layers_vec[i-1].get_weights().rows {
+                panic!("Invalid param in layer {}, weights shape expected to be [{}, {}] but got [{}, {}] instead ",
+                       i,
+                       v.get_weights().rows,
+                       layers_vec[i-1].get_weights().rows,
+                       v.get_weights().rows,
+                       v.get_weights().cols
+                )
+            }
+        }
         Snn { layers: layers_vec }
     }
 }
