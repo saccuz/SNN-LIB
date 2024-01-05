@@ -73,8 +73,18 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         n_occurrences: u32,
     ) -> Self {
         if n_bus < 1 {
-            panic!("Invalid param, expected number of buses at least 1, but got {}", n_bus);
+            panic!(
+                "Invalid param, expected number of buses at least 1, but got {}",
+                n_bus
+            );
         }
+        if n_occurrences < 1 {
+            panic!(
+                "Invalid param, expected number of occurrences at least 1, but got {}",
+                n_occurrences
+            );
+        }
+
         FaultConfiguration {
             components,
             n_bus,
