@@ -379,7 +379,7 @@ mod snn_tests {
             seed,
         );
     }
-
+    //.
     #[test]
     fn snn_creation_with_neuron_per_layer() {
         let seed = Some(21);
