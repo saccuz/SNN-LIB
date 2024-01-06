@@ -217,6 +217,14 @@ impl<N: Neuron + Clone + Send> Snn<N> {
     }
 
     pub fn set_layer_weights(&mut self, weights: MatrixG<f64>, l_idx: usize) {
+        if weights.rows != self.layers[l_idx].get_weights().rows || weights.cols != self.layers[l_idx].get_weights().cols {
+            panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
+                   self.layers[l_idx].get_weights().rows,
+                   self.layers[l_idx].get_weights().cols,
+                   weights.rows,
+                   weights.cols,
+            )
+        }
         self.layers[l_idx].set_weights(weights)
     }
 
@@ -237,7 +245,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
     }
 
     // Returns the number of neurons and the presence/absence of inner weights for each layer.
-    fn get_layers_info(&self) -> Vec<(usize, bool)> {
+    pub fn get_layers_info(&self) -> Vec<(usize, bool)> {
         let mut layers_info = Vec::new();
         for l in self.layers.iter() {
             layers_info.push((l.get_n_neurons(), l.has_states_weights()));

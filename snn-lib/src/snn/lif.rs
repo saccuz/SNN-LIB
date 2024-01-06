@@ -100,10 +100,10 @@ impl Neuron for LifNeuron {
         match parameters {
             Some(p) => {
                 if p.tau <= 0.0 {
-                    panic!("Invalid neuron params, tau must be positive");
+                    panic!("Invalid neuron params, tau must be strictly positive");
                 }
                 if p.v_th <= 0.0 {
-                    panic!("Invalid neuron params, v_th must be positive");
+                    panic!("Invalid neuron params, v_th must be strictly positive");
                 }
                 LifNeuron {
                     id,
@@ -132,6 +132,13 @@ impl Neuron for LifNeuron {
     }
 
     fn set_parameters(&mut self, parameters: &LifNeuronParameters) {
+        // Checks that values are not below or equal to 0
+        if parameters.tau <= 0.0 {
+            panic!("Invalid neuron params, tau must be strictly positive");
+        }
+        if parameters.v_th <= 0.0 {
+            panic!("Invalid neuron params, v_th must be strictly positive");
+        }
         self.v_rest = parameters.v_rest;
         self.v_th = parameters.v_th;
         self.r_type = parameters.r_type;
@@ -174,8 +181,8 @@ impl Neuron for LifNeuron {
 
         let mut ops = vec![false; 7];
 
-        // To avoid a great number of repetition of this match
         if let Some(a_f) = actual_fault {
+            // To avoid a great number of repetition of this match
             if let Component::Inside(real_comp) = &a_f.component {
                 match real_comp {
                     LifSpecificComponent::Adder => ops[0] = true,
@@ -187,16 +194,16 @@ impl Neuron for LifNeuron {
                     LifSpecificComponent::Divider => ops[6] = true,
                 }
             }
-        }
 
-        // Apply faults to v_mem, this is done every iteration because v_mem changes everytime we compute the lif formula.
-        self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
+            // Apply faults to v_mem, this is done every iteration because v_mem changes everytime we compute the lif formula.
+            self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
 
-        // This broken variable check is done to avoid doing function calls every iteration for Stuck at-X faults.
-        if !self.broken {
-            self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
-            self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
-            self.broken = true;
+            // This broken variable check is done to avoid doing function calls every iteration for Stuck at-X faults.
+            if !self.broken {
+                self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
+                self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
+                self.broken = true;
+            }
         }
 
         // Input impulses summation

@@ -24,6 +24,36 @@ impl<N: Neuron + Clone> Layer<N> {
         weights: MatrixG<f64>,
         parameters: Option<&N::T>,
     ) -> Self {
+
+        // Checks if weights dimensions (just rows) are consistent with given neuron number
+        if weights.rows != neurons as usize {
+            panic!("Invalid param, expected Weights matrix shape to be [{} , {}], but got [{}, {}] instead",
+                   neurons,
+                   weights.cols,
+                   weights.rows,
+                   weights.cols,
+            );
+        }
+        // Checks if states weights dimensions (rows and cols) are consistent with given neuron number
+        // and if the matrix's diagonal is 0
+        if let Some(ref sw) = &states_weights {
+            if sw.rows != neurons as usize || sw.cols != neurons as usize {
+                panic!("Invalid param, expected States Weights matrix shape to be [{} , {}], but got [{}, {}] instead",
+                       neurons,
+                       neurons,
+                       sw.rows,
+                       sw.cols,
+                );
+            }
+            for i in 0..sw.rows {
+                for j in 0..sw.cols {
+                    if i == j && sw[i][j] != 0.0 {
+                        panic!("Invalid param, the diagonal of the States Weights matrix must be 0.0, but got {} instead", sw[i][j]);
+                    }
+                }
+            }
+        }
+
         let mut neurons_vec = Vec::<N>::new();
         //Add matrices shape check??
 
@@ -64,7 +94,7 @@ impl<N: Neuron + Clone> Layer<N> {
     }
 
     pub fn set_weights(&mut self, weights: MatrixG<f64>) {
-        if weights.rows != self.weights.rows || weights.cols != self.weights.cols {
+        if weights.rows != self.neurons.len() {
             panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
                    self.neurons.len(),
                    weights.cols,
@@ -72,7 +102,6 @@ impl<N: Neuron + Clone> Layer<N> {
                    weights.cols,
             )
         }
-
         self.weights = weights;
     }
 

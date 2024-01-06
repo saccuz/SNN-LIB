@@ -27,9 +27,18 @@ impl<T: Default + Clone + Copy + SampleUniform + PartialOrd + Display> MatrixG<T
         cols: usize,
         diag: bool,
         seed: Option<u64>,
-        a: T,
-        b: T,
+        mut a: T,
+        mut b: T,
     ) -> MatrixG<T> {
+        if a == b {
+            panic!("Cannot generate a random matrix with limit a ({}) equals to limit b ({})", a, b);
+        }
+        else if a > b {
+            let tmp = a;
+            a = b;
+            b = tmp;
+        }
+
         let mut rng = match seed {
             Some(s) => StdRng::seed_from_u64(s),
             None => StdRng::from_entropy(),

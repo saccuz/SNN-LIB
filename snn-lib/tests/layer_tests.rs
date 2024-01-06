@@ -5,9 +5,37 @@ mod layer_tests {
     use snn_lib::snn::lif::{LifNeuron, LifNeuronParameters, ResetMode};
 
     #[test]
+    #[should_panic(expected = "Invalid param, expected Weights matrix shape to be [3 , 2], but got [4, 2] instead")]
+    fn layer_creation_wrong_weights() {
+        let weights = MatrixG::random(4, 2, false, None, 0.01, 0.99);
+        let states_weights = MatrixG::random(3, 3, true, None, 0.01, 0.99);
+
+        let l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid param, expected States Weights matrix shape to be [3 , 3], but got [3, 4] instead")]
+    fn layer_creation_wrong_states_weights() {
+        let weights = MatrixG::random(3, 2, false, None, 0.01, 0.99);
+        let states_weights = MatrixG::random(3, 4, true, None, 0.01, 0.99);
+
+        let l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid param, the diagonal of the States Weights matrix must be 0.0, but got 0.08278616042737262 instead")]
+    fn layer_creation_wrong_states_weights_diag() {
+        let weights = MatrixG::random(3, 2, false, None, 0.01, 0.99);
+        let states_weights = MatrixG::random(3, 3, false, Some(21), 0.01, 0.99);
+
+        let l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
+    }
+
+    #[test]
     fn layer_creation_and_getters() {
         let weights = MatrixG::random(3,2, false, None, 0.01, 0.99);
         let states_weights = MatrixG::random(3,3, true, None, 0.01, 0.99);
+
         let mut l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), Some(&LifNeuronParameters {
             v_rest: 0.0,
             v_th: 0.8,
@@ -26,8 +54,6 @@ mod layer_tests {
         assert_eq!(l.get_states_weights().clone().unwrap().data, states_weights.data);
         assert_eq!(l.get_n_neurons(), 3);
         assert!(l.has_states_weights());
-
-
     }
 
     #[test]

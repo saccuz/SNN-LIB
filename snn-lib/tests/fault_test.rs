@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod fault_test {
+mod fault_tests {
     use snn_lib::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponent};
     use snn_lib::snn::lif::LifSpecificComponent;
 

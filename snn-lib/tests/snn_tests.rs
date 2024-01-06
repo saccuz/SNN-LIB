@@ -53,6 +53,25 @@ mod snn_tests {
     }
 
     #[test]
+    fn wrong_matrix_creation_inverted_limits() {
+        // Randomly creating an input matrix
+        let weights_matrix = MatrixG::random(2, 3, false, None, 0.99, 0.01);
+        for i in 0..weights_matrix.rows {
+            for j in 0..weights_matrix.cols {
+                assert!(weights_matrix[i][j] <= 0.99);
+                assert!(weights_matrix[i][j] >= 0.01);
+            }
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot generate a random matrix with limit a (0.99) equals to limit b (0.99)")]
+    fn wrong_matrix_creation_empty_range() {
+        // Randomly creating an input matrix
+        let weights_matrix = MatrixG::random(2, 3, false, None, 0.99, 0.99);
+    }
+
+    #[test]
     fn matrix_from() {
         let v = vec![vec![0,1], vec![1,0]];
         let m = MatrixG::from(v);
