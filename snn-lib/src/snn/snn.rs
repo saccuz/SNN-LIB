@@ -164,7 +164,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                             true,
                             seed,
                             -0.99,
-                            -0.01,
+                            -0.001,
                         )),
                         false => None,
                     },
@@ -173,7 +173,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                     Some(ref w) => w[idx].clone(),
                     None => match idx {
                         0 => {
-                            MatrixG::random(*l as usize, n_inputs as usize, false, seed, 0.01, 0.99)
+                            MatrixG::random(*l as usize, n_inputs as usize, false, seed, 0.001, 0.99)
                         }
                         _ => MatrixG::random(
                             *l as usize,
@@ -449,16 +449,6 @@ impl<N: Neuron + Clone + Send> Snn<N> {
 impl<N: Neuron + Clone> From<Vec<Layer<N>>> for Snn<N> {
     fn from(layers_vec: Vec<Layer<N>>) -> Self {
         for (i,v) in layers_vec.iter().enumerate() {
-            if let Some(ref weights) = v.get_states_weights() {
-                if v.get_weights().rows != weights.cols && v.get_weights().rows != weights.rows {
-                    panic!("Invalid param in layer {}, found {} neurons but got inner weights matrix shape  [{}, {}] instead ",
-                           i,
-                           v.get_weights().rows,
-                           weights.rows,
-                           weights.cols
-                    )
-                }
-            }
             if i == 0{
                 continue
             }

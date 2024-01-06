@@ -15,7 +15,7 @@ fn main() {
     let layers_inner_connections = vec![true; layers.len()];
 
     // Setting the log level
-    let log_level = 0;
+    let log_level = 3;
 
     // Randomly creating an input matrix
     let input_matrix = MatrixG::random(24, n_inputs, false, seed, 0, 1);
@@ -69,6 +69,16 @@ fn main() {
         seed,
     );
 
+    //let mut snn = Snn::<LifNeuron>::new(
+    //    n_inputs as u32,
+    //    layers,
+    //    layers_inner_connections,
+    //    None,
+    //    None,
+    //    None,
+    //    seed,
+    //);
+
     //Testing snn utility functions.
     //WORKING!
     //snn.set_neuron_parameters(&(neuron_parameters_per_layer[0].clone()), None);
@@ -103,5 +113,5 @@ fn main() {
     );
 
     // To start the n_occurrences faults emulations
-    snn.emulate_fault(&input_matrix, &fault_configuration, log_level, seed);
+    snn.emulate_fault(&input_matrix, &fault_configuration, log_level, None);
 }

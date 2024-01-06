@@ -144,70 +144,6 @@ mod snn_tests {
     }
 
     #[test]
-    fn snn_creation_with_neuron_per_layer() {
-        let seed = Some(21);
-        let n_inputs: usize = 10;
-        let layers = vec![20, 10, 5, 3];
-        let layers_inner_connections = vec![true; layers.len()];
-
-        let snn = Snn::<LifNeuron>::new(
-            n_inputs as u32,
-            layers.clone(),
-            layers_inner_connections,
-            None,
-            None,
-            None,
-            seed,
-        );
-
-        //We check the shape and if the weights are between 0.0 and 0.1 (hardcoded random function)
-        for (i,l ) in layers.iter().enumerate() {
-            if i == 0 {
-                assert_eq!(snn.get_layer_weights(i).cols, n_inputs);
-                assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
-
-            }
-            else {
-                assert_eq!(snn.get_layer_weights(i).cols, layers[i-1] as usize);
-                assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
-            }
-            assert_eq!(snn.get_layer_states_weights(i).clone().unwrap().rows, *l as usize);
-            assert_eq!(snn.get_layer_states_weights(i).clone().unwrap().cols, *l as usize);
-        }
-
-    }
-/*
-    #[test]
-    fn snn_creation_with_trait_from() {
-        let seed = Some(21);
-        let n_inputs: usize = 10;
-        let layers = vec![20, 10, 5, 3];
-        let layers_inner_connections = vec![true; layers.len()];
-        let mut personalized_weights = Vec::new();
-        for (idx, l) in layers.iter().enumerate() {
-            let mut v = Vec::new();
-            for _ in 0..*l {
-                if idx == 0 {
-                    v.push(vec![0.40; n_inputs]);
-                } else {
-                    v.push(vec![0.40; layers[idx - 1] as usize]);
-                }
-            }
-            personalized_weights.push(MatrixG::from(v));
-        }
-
-
-
-        let vec = Vec::with_capacity(layers.len());
-        for (i,v) in layers.iter().enumerate() {
-
-        }
-
-        let snn = Snn::from(vec)
-    }*/
-
-    //-- panicking test
-    #[test]
     #[should_panic]
     fn snn_creation_with_wrong_weight_shape_should_panic() {
         let seed = Some(21);
@@ -425,17 +361,169 @@ mod snn_tests {
         );
     }
 
+    #[test]
+    fn snn_creation_with_neuron_per_layer() {
+        let seed = Some(21);
+        let n_inputs: usize = 10;
+        let layers = vec![20, 10, 5, 3];
+        let layers_inner_connections = vec![true; layers.len()];
 
-//Test on a single forward
+        let snn = Snn::<LifNeuron>::new(
+            n_inputs as u32,
+            layers.clone(),
+            layers_inner_connections,
+            None,
+            None,
+            None,
+            seed,
+        );
 
-//Test on a Actual fault
+        //We check the shape and if the weights are between 0.0 and 0.1 (hardcoded random function)
+        for (i,l ) in layers.iter().enumerate() {
+            if i == 0 {
+                assert_eq!(snn.get_layer_weights(i).cols, n_inputs);
+                assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
 
-//Test on a Stuckat0
+            }
+            else {
+                assert_eq!(snn.get_layer_weights(i).cols, layers[i-1] as usize);
+                assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
+            }
+            assert_eq!(snn.get_layer_states_weights(i).clone().unwrap().rows, *l as usize);
+            assert_eq!(snn.get_layer_states_weights(i).clone().unwrap().cols, *l as usize);
+        }
 
-//Test on a Stuckat1
+    }
 
-//Test on a Bitflip
+    #[test]
+    fn snn_creation_with_trait_from() {
+        let seed = Some(21);
+        let n_inputs: usize = 10;
+        let layers = vec![20, 10, 5, 3];
+        let layers_inner_connections = vec![true; layers.len()];
 
-//Consider to test all the components
+        let mut vec: Vec<Layer<LifNeuron>> = Vec::with_capacity(layers.len());
+        for (idx, l) in layers.iter().enumerate() {
+            let mut v = Vec::new();
+            for _ in 0..*l {
+                if idx == 0 {
+                    v.push(vec![0.40; n_inputs]);
+                } else {
+                    v.push(vec![0.40; layers[idx - 1] as usize]);
+                }
+            }
+            vec.push(Layer::new(idx as u32, *l, None, MatrixG::from(v), None));
+        }
+
+        let snn = Snn::from(vec);
+        for (i,l ) in layers.iter().enumerate() {
+            if i == 0 {
+                assert_eq!(snn.get_layer_weights(i).cols, n_inputs);
+                assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
+
+            }
+            else {
+                assert_eq!(snn.get_layer_weights(i).cols, layers[i-1] as usize);
+                assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
+            }
+        }
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid param in layer 2, weights shape expected to be [5, 3] but got [5, 10] instead")]
+    fn snn_creation_with_trait_from_with_wrong_weight_matrix_shape() {
+        let seed = Some(21);
+        let n_inputs: usize = 10;
+        let layers = vec![20, 10, 5, 3];
+        let layers_inner_connections = vec![true; layers.len()];
+
+        let mut vec: Vec<Layer<LifNeuron>> = Vec::with_capacity(layers.len());
+        for (idx, l) in layers.iter().enumerate() {
+            let mut v = Vec::new();
+            let x = if idx == 1 { 3 } else { *l };
+            for a in 0..x {
+                if idx == 0 {
+                    v.push(vec![0.40; n_inputs]);
+                } else {
+                    v.push(vec![0.40; layers[idx - 1] as usize]);
+                }
+            }
+            vec.push(Layer::new(idx as u32, x, None, MatrixG::from(v), None));
+        }
+
+        let snn = Snn::from(vec);
+
+    }
+
+    //FORWARD TEST
+    #[test]
+    fn snn_forward() {
+        let seed = Some(21);
+        let n_inputs: usize = 10;
+        let layers = vec![20, 10, 5, 3];
+        let layers_inner_connections = vec![true; layers.len()];
+
+        let mut vec: Vec<Layer<LifNeuron>> = Vec::with_capacity(layers.len());
+        for (idx, l) in layers.iter().enumerate() {
+            let mut v = Vec::new();
+            for _ in 0..*l {
+                if idx == 0 {
+                    v.push(vec![0.40; n_inputs]);
+                } else {
+                    v.push(vec![0.40; layers[idx - 1] as usize]);
+                }
+            }
+            vec.push(Layer::new(idx as u32, *l, None, MatrixG::from(v), None));
+        }
+
+        let mut snn = Snn::from(vec);
+
+        let input_matrix = MatrixG::random(24, n_inputs, false, seed, 0, 1);
+        let output = snn.forward(&input_matrix, None, 0, None);
+        for i in 0..output.len() {
+            assert_eq!(output[i].len(), layers[layers.len()-1] as usize);
+        }
+        assert_eq!(output.len(), input_matrix.rows);
+    }
+
+    //TEST ON ACTUAL FAULT?
+    #[test]
+    fn snn_forward_with_fault() {
+        let seed = Some(42);
+        let n_inputs: usize = 10;
+        let layers = vec![30,20,10];
+        let layers_inner_connections = vec![false; layers.len()];
+        let fault_conf = FaultConfiguration::new(
+            vec![
+                Component::Inside(LifSpecificComponent::Adder),
+                Component::Inside(LifSpecificComponent::Multiplier),
+                Component::Outside(OuterComponent::Connections),
+            ],
+            8,
+            FaultType::StuckAtOne,
+            100,
+        );
+
+
+        let mut snn = Snn::<LifNeuron>::new(
+            n_inputs as u32,
+            layers.clone(),
+            layers_inner_connections,
+            None,
+            None,
+            None,
+            seed,
+        );
+
+        let input_matrix = MatrixG::random(100, n_inputs, false, seed, 0, 1);
+
+        let output = snn.forward(&input_matrix, None, 0, None);
+        let f_output = snn.forward(&input_matrix, Some(&fault_conf), 0, None);
+        for i in 0..output.len() {
+            assert_eq!(output[i], f_output[i]);
+        }
+
+    }
+    //Since it's hard that the fault spreads through the whole network, we won't do further tests on this.
 
 }

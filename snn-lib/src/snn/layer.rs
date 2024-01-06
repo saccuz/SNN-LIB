@@ -25,6 +25,8 @@ impl<N: Neuron + Clone> Layer<N> {
         parameters: Option<&N::T>,
     ) -> Self {
         let mut neurons_vec = Vec::<N>::new();
+        //Add matrices shape check??
+
         for i in 0..neurons {
             neurons_vec.push(N::new(i, parameters));
         }
@@ -64,8 +66,8 @@ impl<N: Neuron + Clone> Layer<N> {
     pub fn set_weights(&mut self, weights: MatrixG<f64>) {
         if weights.rows != self.weights.rows || weights.cols != self.weights.cols {
             panic!("Invalid params, expected Weights vector shape to be [{} , {}], but got [{}, {}] instead",
-                   self.weights.rows,
-                   self.weights.cols,
+                   self.neurons.len(),
+                   weights.cols,
                    weights.rows,
                    weights.cols,
             )
@@ -87,6 +89,13 @@ impl<N: Neuron + Clone> Layer<N> {
                        weights.rows,
                        weights.cols,
                 )
+            }
+            for i in 0..weights.rows {
+                for j in 0..weights.cols {
+                    if i == j && weights[i][j] != 0.0 {
+                        panic!("Invalid param, the diagonal of the States Weights matrix must be 0.0, but got {} instead", weights[i][j]);
+                    }
+                }
             }
         }
         self.states_weights = weights;
