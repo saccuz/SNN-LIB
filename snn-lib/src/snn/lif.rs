@@ -167,6 +167,7 @@ impl Neuron for LifNeuron {
         states: &Vec<u8>,
         actual_fault: Option<&ActualFault<LifSpecificComponent>>,
     ) -> u8 {
+
         self.t_s_last += self.time_step;
 
         // Stop neuron execution if no spike is present in input, to make the whole thing "event based",
@@ -181,6 +182,7 @@ impl Neuron for LifNeuron {
 
         let mut ops = vec![false; 7];
 
+        // Things to do only if an actual fault is present
         if let Some(a_f) = actual_fault {
             // To avoid a great number of repetition of this match
             if let Component::Inside(real_comp) = &a_f.component {
@@ -209,14 +211,22 @@ impl Neuron for LifNeuron {
         // Input impulses summation
         let n_neuron = self.id as usize;
         let summation = match states_weights {
-            Some(states_weights) => LifNeuron::y(
-                input,
-                states,
-                &weights[n_neuron],
-                Some(&states_weights[n_neuron]),
-                actual_fault,
-                &ops,
-            ),
+            Some(states_weights) => {
+                // Actually this check is useful when we manually do a forward on a neuron passing arguments by hand,
+                // that should happen only in tests, but to be sure a check is done to avoid unexpected behaviors.
+                if states.len() != states_weights[n_neuron].len() {
+                    panic!("Unexpected error, states array length was expected to be consistent with states_weights length");
+                }
+
+                LifNeuron::y(
+                    input,
+                    states,
+                    &weights[n_neuron],
+                    Some(&states_weights[n_neuron]),
+                    actual_fault,
+                    &ops,
+                )
+            },
             None => LifNeuron::y(input, states, &weights[n_neuron], None, actual_fault, &ops),
         };
 
@@ -254,16 +264,18 @@ impl Neuron for LifNeuron {
             }
         }
 
-        // Corrupting v_mem memory when the value is written back to memory
-        self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
-
-        // Reapplying bit flip to v_th and v_rest, only if the fault was a bit flip
+        // Final things to do only if an actual fault is present
         if let Some(a_f) = actual_fault {
+            // Corrupting v_mem memory when the value is written back to memory
+            self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
+
+            // Reapplying bit flip to v_th and v_rest, only if the fault was a bit flip
             if let FaultType::TransientBitFlip = &a_f.fault_type {
                 self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
                 self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);
             }
         }
+
         spike
     }
 }

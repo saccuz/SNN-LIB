@@ -68,7 +68,7 @@ mod snn_tests {
     #[should_panic(expected = "Cannot generate a random matrix with limit a (0.99) equals to limit b (0.99)")]
     fn wrong_matrix_creation_empty_range() {
         // Randomly creating an input matrix
-        let weights_matrix = MatrixG::random(2, 3, false, None, 0.99, 0.99);
+        let _weights_matrix = MatrixG::random(2, 3, false, None, 0.99, 0.99);
     }
 
     #[test]
@@ -183,7 +183,7 @@ mod snn_tests {
 
         // Setting personalized weights (all equal) - ONLY FOR DEBUG PURPOSES
         let mut personalized_weights = Vec::new();
-        for (idx, l) in layers.iter().enumerate() {
+        for (idx, _) in layers.iter().enumerate() {
             let mut v = Vec::new();
             for _ in 0..5 {
                 if idx == 0 {
@@ -268,7 +268,7 @@ mod snn_tests {
 
         // Setting personalized inner weights (all equal) - ONLY FOR DEBUG PURPOSES
         let mut personalized_inner_weights = Vec::new();
-        for l in layers.iter() {
+        for _ in layers.iter() {
             personalized_inner_weights.push(Some(MatrixG::random(
                 3 as usize,
                 5 as usize,
@@ -312,7 +312,7 @@ mod snn_tests {
         let layers = vec![20, 0, 5, 3];
         let layers_inner_connections = vec![true; layers.len()];
 
-        let snn = Snn::<LifNeuron>::new(
+        let _snn = Snn::<LifNeuron>::new(
             n_inputs as u32,
             layers.clone(),
             layers_inner_connections,
@@ -331,7 +331,7 @@ mod snn_tests {
         let layers = vec![20, 0, 5, 3];
         let layers_inner_connections = vec![true; layers.len()];
 
-        let snn = Snn::<LifNeuron>::new(
+        let _snn = Snn::<LifNeuron>::new(
             n_inputs as u32,
             layers.clone(),
             layers_inner_connections,
@@ -350,7 +350,7 @@ mod snn_tests {
         let layers = vec![];
         let layers_inner_connections = vec![true; layers.len()];
 
-        let snn = Snn::<LifNeuron>::new(
+        let _snn = Snn::<LifNeuron>::new(
             n_inputs as u32,
             layers.clone(),
             layers_inner_connections,
@@ -369,7 +369,7 @@ mod snn_tests {
         let layers = vec![20, 0, 5, 3];
         let layers_inner_connections = vec![true; layers.len()-1];
 
-        let snn = Snn::<LifNeuron>::new(
+        let _snn = Snn::<LifNeuron>::new(
             n_inputs as u32,
             layers.clone(),
             layers_inner_connections,
@@ -379,7 +379,7 @@ mod snn_tests {
             seed,
         );
     }
-    //.
+
     #[test]
     fn snn_creation_with_neuron_per_layer() {
         let seed = Some(21);
@@ -416,10 +416,8 @@ mod snn_tests {
 
     #[test]
     fn snn_creation_with_trait_from() {
-        let seed = Some(21);
         let n_inputs: usize = 10;
         let layers = vec![20, 10, 5, 3];
-        let layers_inner_connections = vec![true; layers.len()];
 
         let mut vec: Vec<Layer<LifNeuron>> = Vec::with_capacity(layers.len());
         for (idx, l) in layers.iter().enumerate() {
@@ -451,16 +449,14 @@ mod snn_tests {
     #[test]
     #[should_panic(expected = "Invalid param in layer 2, weights shape expected to be [5, 3] but got [5, 10] instead")]
     fn snn_creation_with_trait_from_with_wrong_weight_matrix_shape() {
-        let seed = Some(21);
         let n_inputs: usize = 10;
         let layers = vec![20, 10, 5, 3];
-        let layers_inner_connections = vec![true; layers.len()];
 
         let mut vec: Vec<Layer<LifNeuron>> = Vec::with_capacity(layers.len());
         for (idx, l) in layers.iter().enumerate() {
             let mut v = Vec::new();
             let x = if idx == 1 { 3 } else { *l };
-            for a in 0..x {
+            for _ in 0..x {
                 if idx == 0 {
                     v.push(vec![0.40; n_inputs]);
                 } else {
@@ -470,7 +466,7 @@ mod snn_tests {
             vec.push(Layer::new(idx as u32, x, None, MatrixG::from(v), None));
         }
 
-        let snn = Snn::from(vec);
+        let _snn = Snn::from(vec);
 
     }
 
@@ -480,7 +476,6 @@ mod snn_tests {
         let seed = Some(21);
         let n_inputs: usize = 10;
         let layers = vec![20, 10, 5, 3];
-        let layers_inner_connections = vec![true; layers.len()];
 
         let mut vec: Vec<Layer<LifNeuron>> = Vec::with_capacity(layers.len());
         for (idx, l) in layers.iter().enumerate() {

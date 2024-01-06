@@ -10,7 +10,7 @@ mod layer_tests {
         let weights = MatrixG::random(4, 2, false, None, 0.01, 0.99);
         let states_weights = MatrixG::random(3, 3, true, None, 0.01, 0.99);
 
-        let l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
+        let _: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
     }
 
     #[test]
@@ -19,7 +19,7 @@ mod layer_tests {
         let weights = MatrixG::random(3, 2, false, None, 0.01, 0.99);
         let states_weights = MatrixG::random(3, 4, true, None, 0.01, 0.99);
 
-        let l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
+        let _: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
     }
 
     #[test]
@@ -28,7 +28,7 @@ mod layer_tests {
         let weights = MatrixG::random(3, 2, false, None, 0.01, 0.99);
         let states_weights = MatrixG::random(3, 3, false, Some(21), 0.01, 0.99);
 
-        let l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
+        let _: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), None);
     }
 
     #[test]
@@ -36,7 +36,7 @@ mod layer_tests {
         let weights = MatrixG::random(3,2, false, None, 0.01, 0.99);
         let states_weights = MatrixG::random(3,3, true, None, 0.01, 0.99);
 
-        let mut l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), Some(&LifNeuronParameters {
+        let l: Layer<LifNeuron> = Layer::new(0, 3, Some(states_weights.clone()), weights.clone(), Some(&LifNeuronParameters {
             v_rest: 0.0,
             v_th: 0.8,
             r_type: ResetMode::Zero,
