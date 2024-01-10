@@ -261,13 +261,16 @@ impl<N: Neuron + Clone + Send> Snn<N> {
 
         let n_th = num_cpus::get();
         let count = self.layers.len() % n_th;
-        let mut l_per_t = Vec::new();
+        let mut l_per_t = Vec::with_capacity(if self.layers.len() / n_th == 0 { count } else { n_th });
         for i in 0..n_th {
             if i < count {
                 l_per_t.push(self.layers.len() / n_th + 1);
             } else {
                 if (self.layers.len() / n_th) != 0 {
                     l_per_t.push(self.layers.len() / n_th)
+                }
+                else {
+                    break;
                 }
             }
         }
@@ -332,7 +335,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             None => None,
         };
 
-        let mut out = Vec::new();
+        let mut out = Vec::with_capacity(input_matrix.rows);
         let mut layer_distribution = self.layer_per_thread();
         let th_len = layer_distribution.len();
 

@@ -142,7 +142,7 @@ impl<N: Neuron + Clone> Layer<N> {
         actual_fault: Option<&ActualFault<N::D>>,
         time: usize,
     ) -> Vec<u8> {
-        let mut spikes = Vec::<u8>::new();
+        let mut spikes = Vec::<u8>::with_capacity(self.neurons.len());
 
         match actual_fault {
             None => {
