@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod layer_tests {
-    use snn_lib::snn::generic_matrix::MatrixG;
+    use snn_lib::snn::matrix_g::MatrixG;
     use snn_lib::snn::layer::Layer;
     use snn_lib::snn::lif::{LifNeuron, LifNeuronParameters, ResetMode};
 

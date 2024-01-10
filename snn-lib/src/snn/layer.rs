@@ -2,7 +2,7 @@ use crate::snn::faults::{
     bit_flip, fault_iter, stuck_at_one, stuck_at_zero, ActualFault, Component, FaultType,
     OuterComponent,
 };
-use crate::snn::generic_matrix::MatrixG;
+use crate::snn::matrix_g::MatrixG;
 use crate::snn::neuron::Neuron;
 
 use std::fmt::{Display, Formatter};
@@ -54,7 +54,7 @@ impl<N: Neuron + Clone> Layer<N> {
             }
         }
 
-        let mut neurons_vec = Vec::<N>::new();
+        let mut neurons_vec = Vec::<N>::with_capacity(neurons as usize);
         //Add matrices shape check??
 
         for i in 0..neurons {

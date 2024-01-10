@@ -233,20 +233,31 @@ pub fn stuck_at_zero(x: &mut f64, offset: u8) -> () {
     // And - All bit at 1 while the offset bit to 0, i.e.: 111111111011111
 
     let mut value_bits = x.to_bits();
+    println!("x {}", x);
+    println!("value_bits {}", value_bits);
 
     value_bits &= !(1_u64 << offset);
 
+    println!("value_bits {} DOPO", value_bits);
+
     *x = f64::from_bits(value_bits);
+
+
+    println!("x dopo {}", x);
 }
 
 pub fn stuck_at_one(x: &mut f64, offset: u8) -> () {
     // Or - All bit at 0 while the offset bit to 1, i.e.: 0000000000100000
 
     let mut value_bits = x.to_bits();
+    println!("x {}", x);
+    println!("value_bits {}", value_bits);
 
     value_bits |= 1_u64 << offset;
+    println!("value_bits {} DOPO", value_bits);
 
     *x = f64::from_bits(value_bits);
+    println!("x dopo {}", x);
 }
 
 pub fn bit_flip(x: &mut f64, offset: u8) -> () {

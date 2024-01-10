@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod neuron_tests {
-    use snn_lib::snn::generic_matrix::MatrixG;
-    use snn_lib::snn::lif::{LifNeuronParameters, ResetMode, LifNeuron};
+    use snn_lib::snn::faults::{ActualFault, Component, FaultType};
+    use snn_lib::snn::matrix_g::MatrixG;
+    use snn_lib::snn::lif::{LifNeuronParameters, ResetMode, LifNeuron, LifSpecificComponent};
     use snn_lib::snn::neuron::Neuron;
 
     #[test]
@@ -213,5 +214,25 @@ mod neuron_tests {
     }
 
     // Now checking also with faults
-    // TODO
+
+    #[test]
+    fn neuron_forward_with_fault() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Adder),
+            layer_id: 0,
+            neuron_id: (0, None),   // TODO metti anche 1 e quindi non lo riguarda
+            fault_type: FaultType::StuckAtOne,
+            time_tbf: None,
+            bus: None,
+            offset: 58,
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron = LifNeuron::new(0, Some(&p));
+        let res = neuron.forward(&vec![1,1,1], &Some(sw), &w , &vec![1,1], Some(&af));
+        //assert_eq!(neuron.forward(&vec![1,1,1], &Some(sw), &w , &vec![1,1], Some(&af)), 0);
+    }
+
 }

@@ -1,5 +1,5 @@
 use crate::snn::faults::{ActualFault, FaultConfiguration};
-use crate::snn::generic_matrix::MatrixG;
+use crate::snn::matrix_g::MatrixG;
 use crate::snn::layer::Layer;
 use crate::snn::neuron::Neuron;
 
@@ -60,7 +60,6 @@ impl<N: Neuron + Clone + Send> Snn<N> {
         personalized_inner_weights: Option<Vec<Option<MatrixG<f64>>>>,
         seed: Option<u64>,
     ) -> Self {
-        let mut layers_vec = Vec::<Layer<N>>::new();
 
         // The network should have at least 1 input.
         if n_inputs == 0 {
@@ -146,6 +145,8 @@ impl<N: Neuron + Clone + Send> Snn<N> {
                 }
             }
         }
+
+        let mut layers_vec = Vec::<Layer<N>>::with_capacity(layers.len());
 
         // Building the actual network layers
         for (idx, l) in layers.iter().enumerate() {
@@ -246,7 +247,7 @@ impl<N: Neuron + Clone + Send> Snn<N> {
 
     // Returns the number of neurons and the presence/absence of inner weights for each layer.
     pub fn get_layers_info(&self) -> Vec<(usize, bool)> {
-        let mut layers_info = Vec::new();
+        let mut layers_info = Vec::with_capacity(self.layers.len());
         for l in self.layers.iter() {
             layers_info.push((l.get_n_neurons(), l.has_states_weights()));
         }
@@ -271,9 +272,9 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             }
         }
 
-        let mut s = Vec::new();
-        for _ in 0..l_per_t.len() {
-            s.push(Vec::new())
+        let mut s = Vec::with_capacity(l_per_t.len());
+        for size in l_per_t.iter() {
+            s.push(Vec::with_capacity(*size))
         }
 
         let mut pos = 0;
@@ -307,11 +308,11 @@ impl<N: Neuron + Clone + Send> Snn<N> {
             )
         }
 
-        // Creating channels for threads communication
-        let mut layers_channel_senders = Vec::new();
-        let mut layers_channel_receivers = Vec::new();
-
         let n_channels = min(self.layers.len() + 1, num_cpus::get() + 1);
+
+        // Creating channels for threads communication
+        let mut layers_channel_senders = Vec::with_capacity(n_channels);
+        let mut layers_channel_receivers = Vec::with_capacity(n_channels);
 
         for _ in 0..n_channels {
             let channel = unbounded::<(usize, Vec<u8>)>();

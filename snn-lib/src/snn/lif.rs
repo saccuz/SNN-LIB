@@ -1,5 +1,5 @@
 use crate::snn::faults::{add, apply_fault, compare, div, mul, ActualFault, Component, FaultType};
-use crate::snn::generic_matrix::MatrixG;
+use crate::snn::matrix_g::MatrixG;
 use crate::snn::neuron::NeuronParameters;
 use crate::snn::neuron::{Neuron, SpecificComponent};
 
