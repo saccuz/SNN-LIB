@@ -1,7 +1,7 @@
 extern crate snn_lib;
 
 use snn_lib::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponent};
-use snn_lib::snn::generic_matrix::MatrixG;
+use snn_lib::snn::matrix_g::MatrixG;
 use snn_lib::snn::lif::{LifNeuron, LifNeuronParameters, LifSpecificComponent, ResetMode};
 use snn_lib::snn::snn::Snn;
 

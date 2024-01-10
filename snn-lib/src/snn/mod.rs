@@ -1,5 +1,5 @@
 pub mod faults;
-pub mod generic_matrix;
+pub mod matrix_g;
 pub mod layer;
 pub mod lif;
 pub mod neuron;

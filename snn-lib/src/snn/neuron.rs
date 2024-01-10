@@ -1,6 +1,6 @@
 use crate::snn::faults::ActualFault;
 use std::fmt::Debug;
-use crate::snn::generic_matrix::MatrixG;
+use crate::snn::matrix_g::MatrixG;
 
 pub trait Neuron {
     type T: NeuronParameters;
