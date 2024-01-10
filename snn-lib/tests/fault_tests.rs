@@ -90,6 +90,7 @@ mod fault_tests {
     }
 
     #[test]
+    #[should_panic(expected = "Invalid component for fault configurations: if Inner Weights is selected, be sure to initialize it in the Snn model.")]
     fn generate_actual_fault_panic_inner_weight() {
         let f_c = FaultConfiguration::<LifSpecificComponent>::new(
             vec![
@@ -101,7 +102,24 @@ mod fault_tests {
         );
 
         let layers_info = vec![(3, false)];
-        //let res = f_c.get_actual_fault(layers_info, 5, None);
+        let res = f_c.get_actual_fault(layers_info, 5, None);
+
+    }
+
+    #[test]
+    #[should_panic(expected = "Invalid param, expected total time at least 1, but got 0")]
+    fn generate_actual_fault_panic_if_time_zero() {
+        let f_c = FaultConfiguration::<LifSpecificComponent>::new(
+            vec![
+                Component::Outside(OuterComponent::InnerWeights),
+            ],
+            8,
+            FaultType::TransientBitFlip,
+            100,
+        );
+
+        let layers_info = vec![(3, true)];
+        let res = f_c.get_actual_fault(layers_info, 0, None);
 
     }
 }

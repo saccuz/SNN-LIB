@@ -231,7 +231,7 @@ impl Neuron for LifNeuron {
         };
 
         let exponent: f64 = div(-self.t_s_last, self.tau, actual_fault, ops[6]);
-
+        
         // rest + (mem - rest) * exp(dt/tau) + sum(w*x -wi*xi)
         // Operation:
         // self.v_mem = self.v_rest + (self.v_mem - self.v_rest) * exponent.exp() + summation;
@@ -254,7 +254,7 @@ impl Neuron for LifNeuron {
         );
 
         let spike = compare(self.v_mem, self.v_th, actual_fault, ops[2]); // if v_mem>v_th then spike=1 else spike=0
-
+        
         if spike == 1 {
             self.t_s_last = 0.0;
             self.v_mem = match self.r_type {
@@ -269,7 +269,7 @@ impl Neuron for LifNeuron {
             // Corrupting v_mem memory when the value is written back to memory
             self.v_mem = apply_fault(self.v_mem, actual_fault, ops[4]);
 
-            // Reapplying bit flip to v_th and v_rest, only if the fault was a bit flip
+            // Reapplying bit flip to v_th and v_rest, only if the fault was a bit flip, because this kind of fault should happen only this time
             if let FaultType::TransientBitFlip = &a_f.fault_type {
                 self.v_th = apply_fault(self.v_th, actual_fault, ops[3]);
                 self.v_rest = apply_fault(self.v_rest, actual_fault, ops[5]);

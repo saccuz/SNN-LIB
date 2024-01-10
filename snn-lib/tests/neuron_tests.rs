@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod neuron_tests {
-    use snn_lib::snn::faults::{ActualFault, Component, FaultType};
+    use snn_lib::snn::faults::{ActualFault, Component, FaultType, OuterComponent};
     use snn_lib::snn::matrix_g::MatrixG;
     use snn_lib::snn::lif::{LifNeuronParameters, ResetMode, LifNeuron, LifSpecificComponent};
     use snn_lib::snn::neuron::Neuron;
@@ -216,23 +216,256 @@ mod neuron_tests {
     // Now checking also with faults
 
     #[test]
-    fn neuron_forward_with_fault() {
+    fn neuron_forward_with_adder_fault_stuckatone() {
         let af = ActualFault {
             component: Component::Inside(LifSpecificComponent::Adder),
             layer_id: 0,
-            neuron_id: (0, None),   // TODO metti anche 1 e quindi non lo riguarda
+            neuron_id: (0, None),
             fault_type: FaultType::StuckAtOne,
             time_tbf: None,
             bus: None,
-            offset: 58,
+            offset: 63,
         };
 
         let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
         let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
         let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
-        let mut neuron = LifNeuron::new(0, Some(&p));
-        let res = neuron.forward(&vec![1,1,1], &Some(sw), &w , &vec![1,1], Some(&af));
-        //assert_eq!(neuron.forward(&vec![1,1,1], &Some(sw), &w , &vec![1,1], Some(&af)), 0);
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it does not spike
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 0);
+    }
+
+    #[test]
+    fn neuron_forward_with_adder_fault_stuckatzero() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Adder),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::StuckAtZero,
+            time_tbf: None,
+            bus: None,
+            offset: 52,  //with a 0 in the 52th each value is /2
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it does not spike
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 0);
+    }
+
+    #[test]
+    fn neuron_forward_with_adder_fault_stuckatone_2() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Adder),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::StuckAtOne,
+            time_tbf: None,
+            bus: None,
+            offset: 0,  //with a 1 in the 0th each value has a far away decimal change
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it spikes anyway because a 1 in the 0th position of a f64 provokes a very slight change
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 1);
+    }
+
+    #[test]
+    fn neuron_forward_with_adder_fault_stuckatone_3() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Adder),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::StuckAtOne,
+            time_tbf: None,
+            bus: None,
+            offset: 51,  //with a 1 in the 51th a positive value can have a slight increment
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it spikes anyway because a positive value can have an increment
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 1);
+    }
+
+    #[test]
+    fn neuron_forward_with_adder_fault_bitflip() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Adder),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::TransientBitFlip,
+            time_tbf: None,
+            bus: None,
+            offset: 52,  //with a 0 in the 52th each value is /2
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it does not spike because each value is /2
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 0);
+    }
+
+    #[test]
+    fn neuron_forward_with_multiplier_fault_bitflip() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Multiplier),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::TransientBitFlip,
+            time_tbf: None,
+            bus: None,
+            offset: 52,  //with a 0 in the 52th each value is /2
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it does not spike because each value is /2
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 0);
+    }
+
+    #[test]
+    fn neuron_forward_with_divider_fault_bitflip() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Divider),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::TransientBitFlip,
+            time_tbf: None,
+            bus: None,
+            offset: 52,  //with a 0 in the 52th each value is /2
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it does not spike because each value is /2
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 0);
+    }
+
+    #[test]
+    fn neuron_forward_with_membrane_fault_bitflip() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Membrane),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::TransientBitFlip,
+            time_tbf: None,
+            bus: None,
+            offset: 52,  //with a 0 in the 52th each value is /2, with a 1 is *2
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it spikes anyway because each value is *2
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 1);
+    }
+
+    #[test]
+    fn neuron_forward_with_rest_fault_bitflip() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Rest),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::TransientBitFlip,
+            time_tbf: None,
+            bus: None,
+            offset: 52,  //with a 0 in the 52th each value is /2, with a 1 is *2
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it spikes anyway because rest value is *2
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 1);
+    }
+
+    #[test]
+    fn neuron_forward_with_threshold_fault_bitflip() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Threshold),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::TransientBitFlip,
+            time_tbf: None,
+            bus: None,
+            offset: 53,  //with a 0 in the 53th each value is /4, with a 1 is *4
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it spikes anyway because rest value is *2
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 0);
+    }
+
+    #[test]
+    fn neuron_forward_with_comparator_fault_bitflip() {
+        let af = ActualFault {
+            component: Component::Inside(LifSpecificComponent::Comparator),
+            layer_id: 0,
+            neuron_id: (0, None),
+            fault_type: FaultType::TransientBitFlip,
+            time_tbf: None,
+            bus: None,
+            offset: 53,  //with a 0 in the 53th each value is /2, with a 1 is *2
+        };
+
+        let w = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let sw = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let p = LifNeuronParameters{ v_rest: 0.9, v_th: 4.0008, r_type: ResetMode::RestingPotential, tau:1.0 };
+        let mut neuron1 = LifNeuron::new(0, Some(&p));
+        // Without the fault it does spike
+        assert_eq!(neuron1.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], None), 1);
+        let mut neuron2 = LifNeuron::new(0, Some(&p));
+        // With the fault it does not spike because the comparator with the v_th is broken and so it outputs something != 1 (0.25 in this case, rounded to 0)
+        assert_eq!(neuron2.forward(&vec![1,1,1], &Some(sw.clone()), &w , &vec![1,1], Some(&af)), 0);
     }
 
 }

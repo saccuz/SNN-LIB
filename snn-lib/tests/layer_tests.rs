@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod layer_tests {
+    use snn_lib::snn::faults::{ActualFault, Component, OuterComponent, FaultType};
     use snn_lib::snn::matrix_g::MatrixG;
     use snn_lib::snn::layer::Layer;
     use snn_lib::snn::lif::{LifNeuron, LifNeuronParameters, ResetMode};
@@ -89,5 +90,31 @@ mod layer_tests {
         assert!(matches!(neuron_params.r_type, ResetMode::RestingPotential));
         assert_eq!(neuron_params.tau, 0.44);
     }
+
+    /* TODO: test here faults on Outer components */
+    /*#[test]
+    fn neuron_forward_with_connections_fault_stuckatzero() {
+        let af = ActualFault {
+            component: Component::Outside(OuterComponent::Connections),
+            layer_id: 1,
+            neuron_id: (0, Some(0)),
+            fault_type: FaultType::StuckAtZero,
+            time_tbf: None,
+            bus: None,
+            offset: 52,  //with a 0 in the 52th each value is /2
+        };
+
+        let weights = MatrixG::from(vec![vec![1.0,1.0,1.0], vec![1.0,1.0,1.0]]);
+        let states_weights = MatrixG::from(vec![vec![0.0,1.0], vec![1.0,0.0]]);
+        let mut l: Layer<LifNeuron> = Layer::new(1, 2, Some(states_weights.clone()), weights.clone(), Some(&LifNeuronParameters {
+            v_rest: 0.9,
+            v_th: 4.0008,
+            r_type: ResetMode::RestingPotential,
+            tau: 1.0,
+        }));
+
+        // Without the fault it does spike
+        assert_eq!(l.forward(&vec![1,1,1], Some(&af), 0), [1,0,0]);
+    }*/
 
 }
