@@ -35,6 +35,70 @@ pub struct ActualFault<D: SpecificComponent> {
     pub time_tbf: Option<usize>,
     pub bus: Option<usize>,
     pub offset: u8,
+    n_bus: usize,
+}
+
+impl<D: SpecificComponent> ActualFault<D> {
+    pub fn new(
+        component: Component<D>,
+        layer_id: u32,
+        neuron_id: (u32, Option<u32>),
+        fault_type: FaultType,
+        time_tbf: Option<usize>,
+        bus: Option<usize>,
+        offset: u8,
+        n_bus: usize,
+    ) -> Self {
+        if let Component::Outside(ref outer) = component {
+            if layer_id < 1 {
+                panic!("Invalid param, expected layer_id to be greater than 1 if component is Component::Outside, but got {}", layer_id)
+            }
+            match outer {
+                OuterComponent::Connections => {
+                    if bus.is_none() {
+                        panic!("Invalid param, expected bus to be Some(usize) if component is OuterComponent::Connections, but got None")
+                    }
+                    if bus.unwrap() >= n_bus {
+                        panic!(
+                            "Invalid param, faulted bus: {} greater than total number of buses: {}",
+                            bus.unwrap(),
+                            n_bus
+                        )
+                    }
+                }
+                _ => {
+                    if neuron_id.1.is_none() {
+                        panic!("Invalid param, expected neuron_id.1 to be Some(u32) if component is Component::Outside, but got None")
+                    }
+                }
+            }
+        }
+
+        if let FaultType::TransientBitFlip = fault_type {
+            if time_tbf.is_none() {
+                panic!("Invalid param, expected time_tbf to be Some(usize) if fault_type is FaultType::TransientBitFlip, but got None")
+            }
+        }
+
+        if offset > 63 {
+            panic!("Invalid param, maximum offset is 63, but got {}", offset)
+        }
+
+        ActualFault {
+            component,
+            layer_id,
+            neuron_id,
+            fault_type,
+            time_tbf,
+            bus,
+            offset,
+            n_bus,
+        }
+    }
+
+    pub fn get_n_bus(self) -> usize {
+        self.n_bus
+    }
 }
 
 impl<D: SpecificComponent + Clone + Debug> std::fmt::Display for ActualFault<D> {
@@ -72,6 +136,12 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         fault_type: FaultType,
         n_occurrences: u32,
     ) -> Self {
+        if components.len() < 1 {
+            panic!(
+                "Invalid param, expected number of components at least 1, but got {}",
+                components.len()
+            );
+        }
         if n_bus < 1 {
             panic!(
                 "Invalid param, expected number of buses at least 1, but got {}",
@@ -97,11 +167,9 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
     pub fn components_contain_inner_weights(&self) -> bool {
         let mut ret = false;
         for comp in self.components.iter() {
-            if let Component::Outside(outer) = comp {
-                if let OuterComponent::InnerWeights = outer {
-                    ret = true;
-                    break;
-                }
+            if let Component::Outside(OuterComponent::InnerWeights) = comp {
+                ret = true;
+                break;
             }
         }
         ret
@@ -119,14 +187,13 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         total_time: usize,
         seed: Option<u64>,
     ) -> ActualFault<D> {
-
         if total_time < 1 {
             panic!(
                 "Invalid param, expected total time at least 1, but got {}",
                 total_time
             );
         }
-        
+
         let mut rng = match seed {
             Some(s) => StdRng::seed_from_u64(s),
             None => StdRng::from_entropy(),
@@ -147,10 +214,10 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                 let layer_id = match c {
                     OuterComponent::InnerWeights => {
                         if layers_info.iter().all(|x| x.1 == false) {
-                            panic!("Invalid component for fault configurations: if Inner Weights is selected, be sure to initialize it in the Snn model.");
+                            panic!("Invalid component, there is no Layer with Inner Weights");
                         }
                         // Select every layer that has InnerWeights and randomly return one of those
-                        // Info: we safely unwrap this because it cannot panic (we make it panic in snn.rs -> emulate_fault if there are no inner weights).
+                        // Info: we safely unwrap this because it cannot panic (we make it panic before).
                         *layers_info
                             .iter()
                             .enumerate() // now we have (x = (idx, (n_neurons, bool to track the inner weights' presence))
@@ -166,14 +233,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                 let neuron_id_2 = match c {
                     OuterComponent::Weights => rng.gen_range(0..layers_info[layer_id - 1].0) as i32,
                     OuterComponent::InnerWeights => {
-                        let mut neuron_2 = rng.gen_range(0..layers_info[layer_id].0);
-                        if neuron_id_1 == neuron_2 {
-                            if neuron_2 == layers_info[layer_id].0 - 1 {
-                                neuron_2 -= 1;
-                            } else {
-                                neuron_2 += 1;
-                            }
-                        }
+                        let neuron_2 = rng.gen_range(0..layers_info[layer_id].0);
                         neuron_2 as i32
                     }
                     OuterComponent::Connections => -1,
@@ -194,24 +254,24 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
         };
 
         //###### BUS NUMBER GENERATOR FOR CONNECTIONS FAULTS ######//
-        let bus = match component.clone() {
-            Component::Outside(c) => match c {
-                OuterComponent::Connections => Some(rng.gen_range(0..self.n_bus)),
-                _ => None,
-            },
-            _ => None,
+        let bus_to_fault = if let Component::Outside(OuterComponent::Connections) = component {
+            Some(rng.gen_range(0..self.n_bus))
+        } else {
+            None
         };
+
         //######################################################//
 
-        ActualFault {
+        ActualFault::new(
             component,
             layer_id,
             neuron_id,
-            fault_type: self.fault_type.clone(),
+            self.fault_type.clone(),
             time_tbf,
-            bus,
+            bus_to_fault,
             offset,
-        }
+            self.n_bus,
+        )
     }
 }
 
@@ -289,14 +349,22 @@ pub fn apply_fault<D: SpecificComponent>(
     ret
 }
 
+// Iterate over the weights row and apply the fault to the selected weight (choice based on which bus must fault)
 pub fn fault_iter<D: SpecificComponent>(
     weights: &mut Vec<f64>,
     a_f: &ActualFault<D>,
     f: &dyn Fn(&mut f64, u8) -> (),
 ) {
+    let bus = a_f.bus.unwrap();
+
     for i in 0..weights.len() {
-        if (i + 1) % (a_f.bus.unwrap() + 1) == 0 {
+        if i == 0 && bus == 0 {
             f(&mut weights[i], a_f.offset)
+        } else if bus != 0 || i >= a_f.n_bus {
+            let times = i / a_f.n_bus;
+            if (i + 1) % (times * a_f.n_bus + bus + 1) == 0 {
+                f(&mut weights[i], a_f.offset)
+            }
         }
     }
 }

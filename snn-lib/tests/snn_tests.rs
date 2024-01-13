@@ -1,18 +1,13 @@
 #[cfg(test)]
 mod snn_tests {
     use snn_lib::snn::faults::{Component, FaultConfiguration, FaultType, OuterComponent};
-    use snn_lib::snn::matrix_g::MatrixG;
     use snn_lib::snn::layer::Layer;
     use snn_lib::snn::lif::{LifNeuron, LifNeuronParameters, LifSpecificComponent, ResetMode};
+    use snn_lib::snn::matrix_g::MatrixG;
     use snn_lib::snn::snn::Snn;
 
-//Test on input matrix
-//Consider to test with seed
-
-    //Test the neuron param creation
-
-//Test on snn creation
-//Consider to test with Seed
+    //Test on snn creation
+    //Consider to test with Seed
 
     #[test]
     fn snn_creation() {
@@ -70,18 +65,30 @@ mod snn_tests {
             seed,
         );
 
-        assert_eq!(snn.get_neuron_parameters(0,0).v_th, neuron_parameters_per_layer[0].v_th);
-        assert_eq!(snn.get_neuron_parameters(0,0).v_rest, neuron_parameters_per_layer[0].v_rest);
-        assert_eq!(snn.get_neuron_parameters(0,0).tau, neuron_parameters_per_layer[0].tau);
-        if let ResetMode::Zero = snn.get_neuron_parameters(0,0).r_type {
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).v_th,
+            neuron_parameters_per_layer[0].v_th
+        );
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).v_rest,
+            neuron_parameters_per_layer[0].v_rest
+        );
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).tau,
+            neuron_parameters_per_layer[0].tau
+        );
+        if let ResetMode::Zero = snn.get_neuron_parameters(0, 0).r_type {
             assert!(true);
+        } else {
+            assert!(false)
         }
-        else { assert!(false) }
         //assert_eq!(snn.get_neuron_parameters(0,0).r_type, neuron_parameters_per_layer[0].r_type);
 
-
         assert_eq!(snn.get_layer_weights(0).data, personalized_weights[0].data);
-        assert_eq!(snn.get_layer_states_weights(0).clone().unwrap().data, personalized_inner_weights[0].clone().unwrap().data);
+        assert_eq!(
+            snn.get_layer_states_weights(0).clone().unwrap().data,
+            personalized_inner_weights[0].clone().unwrap().data
+        );
     }
 
     #[test]
@@ -141,18 +148,30 @@ mod snn_tests {
             seed,
         );
 
-        assert_eq!(snn.get_neuron_parameters(0,0).v_th, neuron_parameters_per_layer[0].v_th);
-        assert_eq!(snn.get_neuron_parameters(0,0).v_rest, neuron_parameters_per_layer[0].v_rest);
-        assert_eq!(snn.get_neuron_parameters(0,0).tau, neuron_parameters_per_layer[0].tau);
-        if let ResetMode::Zero = snn.get_neuron_parameters(0,0).r_type {
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).v_th,
+            neuron_parameters_per_layer[0].v_th
+        );
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).v_rest,
+            neuron_parameters_per_layer[0].v_rest
+        );
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).tau,
+            neuron_parameters_per_layer[0].tau
+        );
+        if let ResetMode::Zero = snn.get_neuron_parameters(0, 0).r_type {
             assert!(true);
+        } else {
+            assert!(false)
         }
-        else { assert!(false) }
         //assert_eq!(snn.get_neuron_parameters(0,0).r_type, neuron_parameters_per_layer[0].r_type);
 
-
         assert_eq!(snn.get_layer_weights(0).data, personalized_weights[0].data);
-        assert_eq!(snn.get_layer_states_weights(0).clone().unwrap().data, personalized_inner_weights[0].clone().unwrap().data);
+        assert_eq!(
+            snn.get_layer_states_weights(0).clone().unwrap().data,
+            personalized_inner_weights[0].clone().unwrap().data
+        );
     }
 
     #[test]
@@ -192,12 +211,7 @@ mod snn_tests {
         let mut personalized_inner_weights = Vec::new();
         for _ in layers.iter() {
             personalized_inner_weights.push(Some(MatrixG::random(
-                3 as usize,
-                5 as usize,
-                true,
-                seed,
-                -0.40,
-                -0.20,
+                3usize, 5usize, true, seed, -0.40, -0.20,
             )));
         }
 
@@ -212,18 +226,30 @@ mod snn_tests {
             seed,
         );
 
-        assert_eq!(snn.get_neuron_parameters(0,0).v_th, neuron_parameters_per_layer[0].v_th);
-        assert_eq!(snn.get_neuron_parameters(0,0).v_rest, neuron_parameters_per_layer[0].v_rest);
-        assert_eq!(snn.get_neuron_parameters(0,0).tau, neuron_parameters_per_layer[0].tau);
-        if let ResetMode::Zero = snn.get_neuron_parameters(0,0).r_type {
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).v_th,
+            neuron_parameters_per_layer[0].v_th
+        );
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).v_rest,
+            neuron_parameters_per_layer[0].v_rest
+        );
+        assert_eq!(
+            snn.get_neuron_parameters(0, 0).tau,
+            neuron_parameters_per_layer[0].tau
+        );
+        if let ResetMode::Zero = snn.get_neuron_parameters(0, 0).r_type {
             assert!(true);
+        } else {
+            assert!(false)
         }
-        else { assert!(false) }
         //assert_eq!(snn.get_neuron_parameters(0,0).r_type, neuron_parameters_per_layer[0].r_type);
 
-
         assert_eq!(snn.get_layer_weights(0).data, personalized_weights[0].data);
-        assert_eq!(snn.get_layer_states_weights(0).clone().unwrap().data, personalized_inner_weights[0].clone().unwrap().data);
+        assert_eq!(
+            snn.get_layer_states_weights(0).clone().unwrap().data,
+            personalized_inner_weights[0].clone().unwrap().data
+        );
     }
 
     #[test]
@@ -289,7 +315,7 @@ mod snn_tests {
         let seed = Some(21);
         let n_inputs: usize = 10;
         let layers = vec![20, 0, 5, 3];
-        let layers_inner_connections = vec![true; layers.len()-1];
+        let layers_inner_connections = vec![true; layers.len() - 1];
 
         let _snn = Snn::<LifNeuron>::new(
             n_inputs as u32,
@@ -320,20 +346,23 @@ mod snn_tests {
         );
 
         //We check the shape and if the weights are between 0.0 and 0.1 (hardcoded random function)
-        for (i,l ) in layers.iter().enumerate() {
+        for (i, l) in layers.iter().enumerate() {
             if i == 0 {
                 assert_eq!(snn.get_layer_weights(i).cols, n_inputs);
                 assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
-
-            }
-            else {
-                assert_eq!(snn.get_layer_weights(i).cols, layers[i-1] as usize);
+            } else {
+                assert_eq!(snn.get_layer_weights(i).cols, layers[i - 1] as usize);
                 assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
             }
-            assert_eq!(snn.get_layer_states_weights(i).clone().unwrap().rows, *l as usize);
-            assert_eq!(snn.get_layer_states_weights(i).clone().unwrap().cols, *l as usize);
+            assert_eq!(
+                snn.get_layer_states_weights(i).clone().unwrap().rows,
+                *l as usize
+            );
+            assert_eq!(
+                snn.get_layer_states_weights(i).clone().unwrap().cols,
+                *l as usize
+            );
         }
-
     }
 
     #[test]
@@ -355,21 +384,21 @@ mod snn_tests {
         }
 
         let snn = Snn::from(vec);
-        for (i,l ) in layers.iter().enumerate() {
+        for (i, l) in layers.iter().enumerate() {
             if i == 0 {
                 assert_eq!(snn.get_layer_weights(i).cols, n_inputs);
                 assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
-
-            }
-            else {
-                assert_eq!(snn.get_layer_weights(i).cols, layers[i-1] as usize);
+            } else {
+                assert_eq!(snn.get_layer_weights(i).cols, layers[i - 1] as usize);
                 assert_eq!(snn.get_layer_weights(i).rows, *l as usize);
             }
         }
     }
 
     #[test]
-    #[should_panic(expected = "Invalid param in layer 2, weights shape expected to be [5, 3] but got [5, 10] instead")]
+    #[should_panic(
+        expected = "Invalid param in layer 2, weights shape expected to be [5, 3] but got [5, 10] instead"
+    )]
     fn snn_creation_with_trait_from_with_wrong_weight_matrix_shape() {
         let n_inputs: usize = 10;
         let layers = vec![20, 10, 5, 3];
@@ -389,7 +418,6 @@ mod snn_tests {
         }
 
         let _snn = Snn::from(vec);
-
     }
 
     //FORWARD TEST
@@ -417,7 +445,7 @@ mod snn_tests {
         let input_matrix = MatrixG::random(24, n_inputs, false, seed, 0, 1);
         let output = snn.forward(&input_matrix, None, 0, None);
         for i in 0..output.len() {
-            assert_eq!(output[i].len(), layers[layers.len()-1] as usize);
+            assert_eq!(output[i].len(), layers[layers.len() - 1] as usize);
         }
         assert_eq!(output.len(), input_matrix.rows);
     }
@@ -427,7 +455,7 @@ mod snn_tests {
     fn snn_forward_with_fault() {
         let seed = Some(42);
         let n_inputs: usize = 10;
-        let layers = vec![30,20,10];
+        let layers = vec![30, 20, 10];
         let layers_inner_connections = vec![false; layers.len()];
         let fault_conf = FaultConfiguration::new(
             vec![
@@ -439,7 +467,6 @@ mod snn_tests {
             FaultType::StuckAtOne,
             100,
         );
-
 
         let mut snn = Snn::<LifNeuron>::new(
             n_inputs as u32,
@@ -458,8 +485,6 @@ mod snn_tests {
         for i in 0..output.len() {
             assert_eq!(output[i], f_output[i]);
         }
-
     }
     //Since it's hard that the fault spreads through the whole network, we won't do further tests on this.
-
 }
