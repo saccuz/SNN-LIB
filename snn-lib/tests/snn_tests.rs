@@ -487,4 +487,31 @@ mod snn_tests {
         }
     }
     //Since it's hard that the fault spreads through the whole network, we won't do further tests on this.
+
+    #[test]
+    fn snn_forward_output_expected() {
+        let seed = Some(21);
+        let n_inputs: usize = 2;
+        let layers = vec![2, 1];
+
+        let mut vec: Vec<Layer<LifNeuron>> = Vec::with_capacity(layers.len());
+        for (idx, l) in layers.iter().enumerate() {
+            let mut v = Vec::new();
+            for _ in 0..*l {
+                if idx == 0 {
+                    v.push(vec![1.0; n_inputs]);
+                } else {
+                    v.push(vec![1.0; layers[idx - 1] as usize]);
+                }
+            }
+            vec.push(Layer::new(idx as u32, *l, None, MatrixG::from(v), None));
+        }
+
+        let mut snn = Snn::from(vec);
+
+        let input_matrix = MatrixG::from(vec![vec![0,0], vec![1,1]]);
+        let output = snn.forward(&input_matrix, None, 0, None);
+        assert_eq!(output, vec![[0],[1]]);
+    }
+
 }

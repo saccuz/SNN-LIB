@@ -786,7 +786,7 @@ mod neuron_tests {
             FaultType::TransientBitFlip,
             Some(0),
             None,
-            53, //with a 0 in the 53th each value is /2, with a 1 is *2
+            53, //with a 0 in the 53th each value is /4
             2,
         );
 
