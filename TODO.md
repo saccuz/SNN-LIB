@@ -1,7 +1,5 @@
 
 # Cose da fare
-- Fare test
-- Readme [ongoing]
 - Report (? o basta il readme?)
 - presentazione powerpoint????????
 

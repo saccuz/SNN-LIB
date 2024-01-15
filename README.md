@@ -108,7 +108,7 @@ the specific fault for that specific occurrence and, finally, time: since it is 
 know when the fault has to be applied.
 
 ```rust
-fn forward(&mut self, inputs: &Vec<u8>, actual_faults: Option<&ActualFault<N::D>>, time: usize) -> Vec<u8>
+fn forward(&mut self, inputs: &Vec<u8>, actual_fault: Option<&ActualFault<N::D>>, time: usize) -> Vec<u8>
 ```
 ### Forward (LifNeuron)
 The forward of the LifNeuron it's just an implementation of the forward in Trait `Neuron`.
