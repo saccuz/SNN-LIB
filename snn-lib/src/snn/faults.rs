@@ -221,6 +221,7 @@ impl<D: SpecificComponent + Clone + Debug> FaultConfiguration<D> {
                         *layers_info
                             .iter()
                             .enumerate() // now we have (x = (idx, (n_neurons, bool to track the inner weights' presence))
+                            .skip(1)
                             .filter(|x| x.1 .1) // check if the inner weights' flag is true
                             .map(|x| x.0) // take only the index
                             .collect::<Vec<usize>>()
