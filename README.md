@@ -12,9 +12,9 @@
 - [Licence](#licence)
 
 ## Members
-- Francesco Sorrentino (s301665)
-- Marco Sacchet (s295033)
-- Simone Mascali (s305001)
+- Francesco Sorrentino (s301665): [Github](https://github.com/FrancescoSorrentino)
+- Marco Sacchet (s295033): [Github]((https://github.com/saccuz)
+- Simone Mascali (s305001): [Github](https://github.com/vmask25)
 
 ## Description
 This repository contains a Rust library for the study of the resilience of a Spiking Neural Network in terms of hardware faults that can happen during inference.
