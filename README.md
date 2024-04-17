@@ -13,7 +13,7 @@
 
 ## Members
 - Francesco Sorrentino (s301665): [Github](https://github.com/FrancescoSorrentino)
-- Marco Sacchet (s295033): [Github]((https://github.com/saccuz)
+- Marco Sacchet (s295033): [Github](https://github.com/saccuz)
 - Simone Mascali (s305001): [Github](https://github.com/vmask25)
 
 ## Description
