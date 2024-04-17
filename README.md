@@ -18,6 +18,7 @@
 
 ## Description
 This repository contains a Rust library for the study of the resilience of a Spiking Neural Network in terms of hardware faults that can happen during inference.
+The study was conducted as part of the exam: [Programmazione di Sistema](https://didattica.polito.it/pls/portal30/gap.pkg_guide.viewGap?p_cod_ins=02GRSOV&p_a_acc=2023&p_header=S&p_lang=IT&multi=N) at [Politecnico di Torino](https://www.polito.it)
 
 ### Hardware Simulation
 This library emulates a physical implementation of a Spiking Neural Network. The simulation is based on a few assumptions:
